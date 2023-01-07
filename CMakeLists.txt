@@ -14,7 +14,7 @@ pico_sdk_init()
 
 # Tell CMake where to find the executatble source file
 add_executable(${PROJECT_NAME}
-    main.c pico_library.c
+    main.c pico_library.c uartRingBuffer.c
 )
 
 # Create map/bin/hex/uf2 files

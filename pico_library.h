@@ -32,6 +32,7 @@
 
 #include "hardware/uart.h"
 #include "pico/stdlib.h"
+#include "uartRingBuffer.h"
 
 /* Private defines -----------------------------------------------------------*/
 #define PICO_LIB_DEBUG 1  // Comment if there is no debuging enable
@@ -42,7 +43,7 @@ typedef struct {
     uint baudrate;
     uint txPin;
     uint rxPin;
-    bool inLoopProgess;
+    bool ConnectionAvailable;
 } PicoLibrary_t;
 
 /* Exported constants --------------------------------------------------------*/
@@ -63,13 +64,6 @@ void picolib_init(PicoLibrary_t *PicoParam);
  * @retval void
  */
 void sim_init(uart_inst_t *Uart);
-
-/**
- * @brief Looping this function in infinite loop with nonblocking or Using Timer
-to make this library properly working. (1ms iteration).
- * @retval void
-*/
-void picolib_loop();
 
 /* Module SIM Hardware Abstract Layer (HAL) functions */
 /**
@@ -106,11 +100,11 @@ void sim_send_at_command(uart_inst_t *Uart, char *buffer);
 /**
  * @brief Receive AT command
  * @param Uart The pointer of uart instance.
- * @param buffer The pointer of the buffer.
+ * @param Buffer The pointer of the buffer.
  * @param Delimiter Determine the character to end up the string.
  * @retval bool
  */
-bool sim_receive_at_command(uart_inst_t *Uart, char *buffer, char Delimiter);
+bool sim_receive_at_command(uart_inst_t *Uart, char *Buffer, char Delimiter);
 
 /**
  * @brief Flushing buffer by forwarding all to terminal if enabled.

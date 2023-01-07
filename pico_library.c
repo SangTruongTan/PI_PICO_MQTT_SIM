@@ -30,22 +30,20 @@
 #else
 #define LOG(X)
 #endif
+
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
 PicoLibrary_t *mPico;
-
+RingHandler_t mRingHandler;
 /* Private function prototypes -----------------------------------------------*/
 
 /* Private user code ---------------------------------------------------------*/
 void picolib_init(PicoLibrary_t *PicoParam) {
     mPico = PicoParam;
-    // Initialize uart
-    uart_init(mPico->uartId, mPico->baudrate);
-    // Port gpio pins as uart pins
-    gpio_set_function(mPico->txPin, GPIO_FUNC_UART);
-    gpio_set_function(mPico->rxPin, GPIO_FUNC_UART);
-
+    // uart Ring Buffer initialize
+    mRingHandler.uartId = mPico->uartId;
+    Ring_Init(&mRingHandler, mPico->baudrate, mPico->txPin, mPico->rxPin);
     // Sim Initialize
     sim_init(mPico->uartId);
 }
@@ -59,13 +57,6 @@ void sim_init(uart_inst_t *Uart) {
     sim_at_netclose(Uart);
     sleep_ms(2000);  // Wait 2s before turning on network
     sim_at_netopen(Uart);
-}
-
-void picolib_loop() {
-    if (mPico->inLoopProgress == false) {
-        mPico->inLoopProgress = true;
-        
-    }
 }
 
 void at_command_bio_forward(uart_inst_t *DebugUart, uart_inst_t *UartSim) {
@@ -119,14 +110,12 @@ void sim_send_at_command(uart_inst_t *Uart, char *buffer) {
     uart_puts(Uart, buffer);
 }
 
-bool sim_receive_at_command(uart_inst_t *Uart, char *buffer, char Delimiter) {
-    int pos = 0;
+bool sim_receive_at_command(uart_inst_t *Uart, char *Buffer, char Delimiter) {
     int timeout = 10;
     while (timeout > 0) {
-        if (uart_is_readable(Uart)) {
-            buffer[pos] = uart_getc(Uart);
-            if (buffer[pos] == Delimiter) break;
-            pos++;
+        if (Is_available(&mRingHandler)) {
+            int Length = Get_String_NonBlocking(&mRingHandler, Buffer, '\n');
+            if (Length > 2) break;
         } else {
             sleep_ms(1);
             timeout--;
