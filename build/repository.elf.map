@@ -58,6 +58,8 @@ Discarded input sections
  .text          0x00000000        0x0 CMakeFiles/repository.dir/pico_library.c.obj
  .data          0x00000000        0x0 CMakeFiles/repository.dir/pico_library.c.obj
  .bss           0x00000000        0x0 CMakeFiles/repository.dir/pico_library.c.obj
+ .text.picolib_loop
+                0x00000000       0x14 CMakeFiles/repository.dir/pico_library.c.obj
  .text.at_command_bio_forward
                 0x00000000       0xd4 CMakeFiles/repository.dir/pico_library.c.obj
  .text.sim_forward_command
@@ -963,9 +965,9 @@ Discarded input sections
                 0x00000000        0x8 CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
  .rodata.__bi_65.1
                 0x00000000        0xc CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
- .text          0x00000000        0x0 C:\Users\sangt\AppData\Local\Temp\cckf2XLt.o
- .data          0x00000000        0x0 C:\Users\sangt\AppData\Local\Temp\cckf2XLt.o
- .bss           0x00000000        0x0 C:\Users\sangt\AppData\Local\Temp\cckf2XLt.o
+ .text          0x00000000        0x0 C:\Users\sangt\AppData\Local\Temp\ccuv1OU2.o
+ .data          0x00000000        0x0 C:\Users\sangt\AppData\Local\Temp\ccuv1OU2.o
+ .bss           0x00000000        0x0 C:\Users\sangt\AppData\Local\Temp\ccuv1OU2.o
  .data          0x00000000        0x0 c:/vsarm/armcc/102021~1.10/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v6-m/nofp\libgcc.a(_dvmd_tls.o)
  .bss           0x00000000        0x0 c:/vsarm/armcc/102021~1.10/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v6-m/nofp\libgcc.a(_dvmd_tls.o)
  .text          0x00000000        0x0 c:/vsarm/armcc/102021~1.10/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v6-m/nofp\libc.a(lib_a-calloc.o)
@@ -1124,7 +1126,7 @@ LOAD c:/vsarm/armcc/102021~1.10/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../
 .boot2          0x10000000      0x100
                 0x10000000                __boot2_start__ = .
  *(.boot2)
- .boot2         0x10000000      0x100 C:\Users\sangt\AppData\Local\Temp\cckf2XLt.o
+ .boot2         0x10000000      0x100 C:\Users\sangt\AppData\Local\Temp\ccuv1OU2.o
                 0x10000100                __boot2_end__ = .
                 0x00000001                ASSERT (((__boot2_end__ - __boot2_start__) == 0x100), ERROR: Pico second stage bootloader must be 256 bytes in size)
 
@@ -1775,7 +1777,7 @@ LOAD c:/vsarm/armcc/102021~1.10/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../
                 0x20041000                __scratch_y_end__ = .
                 0x10005a48                __scratch_y_source__ = LOADADDR (.scratch_y)
 
-.bss            0x20000a80      0x428
+.bss            0x20000a80      0x42c
                 0x20000a80                . = ALIGN (0x4)
                 0x20000a80                __bss_start__ = .
  *(SORT_BY_ALIGNMENT(SORT_BY_NAME(.bss*)))
@@ -1820,37 +1822,37 @@ LOAD c:/vsarm/armcc/102021~1.10/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../
                 0x20000e5c        0x4 CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
  .bss.mPico     0x20000e60        0x4 CMakeFiles/repository.dir/pico_library.c.obj
                 0x20000e60                mPico
- .bss.mPicoLib  0x20000e64       0x10 CMakeFiles/repository.dir/main.c.obj
+ .bss.mPicoLib  0x20000e64       0x14 CMakeFiles/repository.dir/main.c.obj
                 0x20000e64                mPicoLib
- .bss.pools     0x20000e74       0x10 CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/common/pico_time/time.c.obj
+ .bss.pools     0x20000e78       0x10 CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/common/pico_time/time.c.obj
  .bss.sf_clz_func
-                0x20000e84        0x4 CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/pico_double/double_init_rom.c.obj
-                0x20000e84                sf_clz_func
+                0x20000e88        0x4 CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/pico_double/double_init_rom.c.obj
+                0x20000e88                sf_clz_func
  .bss.sleep_notifier
-                0x20000e88        0x4 CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/common/pico_time/time.c.obj
+                0x20000e8c        0x4 CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/common/pico_time/time.c.obj
  .bss.target_hi
-                0x20000e8c       0x10 CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
+                0x20000e90       0x10 CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
  .bss.uart_char_to_line_feed
-                0x20000e9c        0x4 CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/hardware_uart/uart.c.obj
-                0x20000e9c                uart_char_to_line_feed
+                0x20000ea0        0x4 CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/hardware_uart/uart.c.obj
+                0x20000ea0                uart_char_to_line_feed
  .bss.uart_instance
-                0x20000ea0        0x4 CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
- .bss.claimed   0x20000ea4        0x1 CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
+                0x20000ea4        0x4 CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
+ .bss.claimed   0x20000ea8        0x1 CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
  .bss.irq_hander_chain_free_slot_head
-                0x20000ea5        0x1 CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/hardware_irq/irq.c.obj
+                0x20000ea9        0x1 CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/hardware_irq/irq.c.obj
  .bss.timer_callbacks_pending
-                0x20000ea6        0x1 CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
+                0x20000eaa        0x1 CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
  *(COMMON)
-                0x20000ea8                . = ALIGN (0x4)
- *fill*         0x20000ea7        0x1 
-                0x20000ea8                __bss_end__ = .
+                0x20000eac                . = ALIGN (0x4)
+ *fill*         0x20000eab        0x1 
+                0x20000eac                __bss_end__ = .
 
-.heap           0x20000ea8      0x800
-                0x20000ea8                __end__ = .
-                0x20000ea8                end = __end__
+.heap           0x20000eac      0x800
+                0x20000eac                __end__ = .
+                0x20000eac                end = __end__
  *(.heap*)
- .heap          0x20000ea8      0x800 CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/pico_standard_link/crt0.S.obj
-                0x200016a8                __HeapLimit = .
+ .heap          0x20000eac      0x800 CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/pico_standard_link/crt0.S.obj
+                0x200016ac                __HeapLimit = .
 
 .stack1_dummy   0x20040000        0x0
  *(.stack1*)
@@ -1916,7 +1918,7 @@ LOAD CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/pico_st
 LOAD CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
 LOAD CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
 LOAD CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
-LOAD C:\Users\sangt\AppData\Local\Temp\cckf2XLt.o
+LOAD C:\Users\sangt\AppData\Local\Temp\ccuv1OU2.o
 LOAD c:/vsarm/armcc/102021~1.10/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v6-m/nofp\libstdc++.a
 LOAD c:/vsarm/armcc/102021~1.10/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v6-m/nofp\libm.a
 START GROUP
@@ -2012,7 +2014,7 @@ LOAD linker stubs
  .ARM.attributes
                 0x000005ea       0x2c CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
  .ARM.attributes
-                0x00000616       0x22 C:\Users\sangt\AppData\Local\Temp\cckf2XLt.o
+                0x00000616       0x22 C:\Users\sangt\AppData\Local\Temp\ccuv1OU2.o
  .ARM.attributes
                 0x00000638       0x1e c:/vsarm/armcc/102021~1.10/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v6-m/nofp\libgcc.a(_dvmd_tls.o)
  .ARM.attributes
