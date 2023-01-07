@@ -42,6 +42,7 @@ typedef struct {
     uint baudrate;
     uint txPin;
     uint rxPin;
+    bool inLoopProgess;
 } PicoLibrary_t;
 
 /* Exported constants --------------------------------------------------------*/
@@ -62,6 +63,13 @@ void picolib_init(PicoLibrary_t *PicoParam);
  * @retval void
  */
 void sim_init(uart_inst_t *Uart);
+
+/**
+ * @brief Looping this function in infinite loop with nonblocking or Using Timer
+to make this library properly working. (1ms iteration).
+ * @retval void
+*/
+void picolib_loop();
 
 /* Module SIM Hardware Abstract Layer (HAL) functions */
 /**
@@ -126,6 +134,7 @@ void sim_at_netclose(uart_inst_t *Uart);
 void sim_at_netopen(uart_inst_t *Uart);
 
 /* MQTT Support functions */
+
 /**
  * @brief MQTT Start
  * @retval void
@@ -134,15 +143,49 @@ void mqtt_start();
 
 /**
  * @brief MQTT Acquire Client
- * @param ClientIdx The client index.
+ * @param ClientIdx The client index. A numeric parameter that identifies a
+client. The range of permitted values is 0 to 1.
  * @param ClientId The client ID.
  * @retval void
  */
 void mqtt_acquire_client(uint8_t ClientIdx, char *ClientId);
 
 /**
+ * @brief MQTT Release Client
+ * @param ClientIdx The client index. A numeric parameter that identifies a
+client. The range of permitted values is 0 to 1.
+ * @retval bool True means subscribe succesfully and opposite for False.
+ */
+
+/**
+ * @brief MQTT Set SSL context
+ * @param Session The session_id to operate. It’s from 0 to 1.
+ * @param SSLContextId The SSL context ID which will be used in the SSL
+ connection.
+* @retval bool True means subscribe succesfully and opposite for False.
+ */
+
+/**
+ * @brief MQTT WILL TOPIC message
+ * @param ClientIdx The client index. A numeric parameter that identifies a
+client. The range of permitted values is 0 to 1.
+ * @param WillTopic The Topic of WILL message.
+ * @retval bool True means subscribe succesfully and opposite for False.
+ */
+
+/**
+ * @brief MQTT WILL message
+ * @param ClientIdx The client index. A numeric parameter that identifies a
+client. The range of permitted values is 0 to 1.
+ * @param Message The payload of will message.
+ * @param Qos The publish message’s qos. The range is from 0 to 2.
+ * @retval bool True means subscribe succesfully and opposite for False.
+ */
+
+/**
  * @brief MQTT Connect Server
- * @param ClientIdx The client index.
+ * @param ClientIdx The client index. A numeric parameter that identifies a
+client. The range of permitted values is 0 to 1.
  * @param Server The server address. For instance,
  * "tcp://test.mosquitto.org:1883"
  * @param KeepAliveTime Keep Alive Time parameter.
@@ -151,5 +194,97 @@ void mqtt_acquire_client(uint8_t ClientIdx, char *ClientId);
  */
 void mqtt_connect_server(uint8_t ClientIdx, char *Server,
                          uint16_t KeepAliveTime, uint8_t CleanSession);
+
+/**
+ * @brief MQTT Disconnect from Server
+ * @param ClientIdx The client index. A numeric parameter that identifies a
+client. The range of permitted values is 0 to 1.
+ @ @param Timeout The timeout value for disconnection. The unit is second. The
+range is 60s to 180s. The default value is 0s (not set the timeout value)
+ */
+
+/**
+ * @brief MQTT SUBSCRIBE TOPIC message
+ * @param ClientIdx The client index. A numeric parameter that identifies a
+client. The range of permitted values is 0 to 1.
+ * @param SubTopic The topic of SUBSCRIBE message.
+ * @param Qos The publish message’s qos. The range is from 0 to 2.
+ * @retval bool True means subscribe succesfully and opposite for False.
+ */
+
+/**
+ * @brief MQTT SUBSCRIBE message
+ * @param ClientIdx The client index. A numeric parameter that identifies a
+client. The range of permitted values is 0 to 1.
+ * @param Message The message of SUBSCRIBE message.
+ * @param Qos The publish message’s qos. The range is from 0 to 2.
+ * @retval bool True means subscribe succesfully and opposite for False.
+ */
+
+/**
+ * @brief MQTT UNSUBSCRIBE TOPIC message
+ * @param ClientIdx The client index. A numeric parameter that identifies a
+client. The range of permitted values is 0 to 1.
+ * @param UnsubTopic The topic of UNSUBSRIBE message.
+ * @retval bool True means subscribe succesfully and opposite for False.
+ */
+
+/**
+ * @brief MQTT UNSUBSCRIBE message
+ * @param ClientIdx The client index. A numeric parameter that identifies a
+client. The range of permitted values is 0 to 1.
+ * @param Message The message of UNSUBSCRIBE message.
+ * @retval bool True means subscribe succesfully and opposite for False.
+ */
+
+/**
+ * @brief MQTT PUBLISH TOPIC message
+ * @param ClientIdx The client index. A numeric parameter that identifies a
+client. The range of permitted values is 0 to 1.
+ * @param PubTopic The topic of PUBLISH message.
+ * @retval bool True means subscribe succesfully and opposite for False.
+ */
+
+/**
+ * @brief MQTT PUBLISH Payload message
+ * @param ClientIdx The client index. A numeric parameter that identifies a
+client. The range of permitted values is 0 to 1.
+ * @param Message The message of PUBLISH message.
+ * @retval bool True means subscribe succesfully and opposite for False.
+ */
+
+/**
+ * @brief MQTT PUBLISH message to server
+ * @param ClientIdx The client index. A numeric parameter that identifies a
+client. The range of permitted values is 0 to 1.
+ * @param Qos The publish message’s qos. The range is from 0 to 2.
+ * @param PubTimeout The publishing timeout interval value. The range is from
+60s to 180s.
+ * @retval bool True means subscribe succesfully and opposite for False.
+ */
+
+/**
+ * @brief MQTT Configure Context
+ * @param ClientIdx The client index. A numeric parameter that identifies a
+client. The range of permitted values is 0 to 1.
+ * @param CheckUtf8Flag The flag to indicate whether to check the string is UTF8
+coding or not, the default value is 1. 0 means not check and opposite side.
+ * @param bool True means subscribe succesfully and opposite for False.
+ */
+
+/* SMS Support Functions */
+
+/**
+ * @brief SMS select message format. Default as Text mode.
+ * @param PhoneNumber The destination phone number. For instance, "+8412345789".
+ * @param Text The text message.
+ * @param bool True means subscribe succesfully and opposite for False.
+ */
+
+/**
+ * @brief SMS Read unread message
+ * @param Buffer The buffer of receiving message in case. Should be largely.
+ * @retval bool True means subscribe succesfully and opposite for False.
+ */
 
 #endif /* __PICO_LIBRARY_H_ */

@@ -61,6 +61,13 @@ void sim_init(uart_inst_t *Uart) {
     sim_at_netopen(Uart);
 }
 
+void picolib_loop() {
+    if (mPico->inLoopProgress == false) {
+        mPico->inLoopProgress = true;
+        
+    }
+}
+
 void at_command_bio_forward(uart_inst_t *DebugUart, uart_inst_t *UartSim) {
     char Output[2] = {'\0', '\0'};
     while (1) {
