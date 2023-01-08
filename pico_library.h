@@ -40,10 +40,15 @@
 /* Exported types ------------------------------------------------------------*/
 typedef struct {
     uart_inst_t *uartId;
+    RingHandler_t RingHandler;
     uint baudrate;
     uint txPin;
     uint rxPin;
     bool ConnectionAvailable;
+    bool MqttStarted;
+    bool MorethanSymbol;
+    bool RxTopic;
+    bool RxPayload;
 } PicoLibrary_t;
 
 /* Exported constants --------------------------------------------------------*/
@@ -60,10 +65,18 @@ void picolib_init(PicoLibrary_t *PicoParam);
 
 /**
  * @brief Initialize module SIM.
- * @param Uart the pointer of uart instance.
+ * @param Uart The pointer of uart instance.
  * @retval void
  */
 void sim_init(uart_inst_t *Uart);
+
+/**
+ * @brief Handler the message receive from SIM module
+ * @param Buffer The pointer of buffer.
+ * @retval bool True means the message contains processing-needed, and vice
+ * versa.
+ */
+bool picolib_process(char *Buffer);
 
 /* Module SIM Hardware Abstract Layer (HAL) functions */
 /**
@@ -131,9 +144,9 @@ void sim_at_netopen(uart_inst_t *Uart);
 
 /**
  * @brief MQTT Start
- * @retval void
+ * @retval bool True means started succesfully and opposite for False.
  */
-void mqtt_start();
+bool mqtt_start();
 
 /**
  * @brief MQTT Acquire Client
@@ -184,9 +197,9 @@ client. The range of permitted values is 0 to 1.
  * "tcp://test.mosquitto.org:1883"
  * @param KeepAliveTime Keep Alive Time parameter.
  * @param CleanSession Clean Session parameter.
- * @retval void
+ * @retval bool True means connected succesfully and opposite for False.
  */
-void mqtt_connect_server(uint8_t ClientIdx, char *Server,
+bool mqtt_connect_server(uint8_t ClientIdx, char *Server,
                          uint16_t KeepAliveTime, uint8_t CleanSession);
 
 /**
@@ -280,5 +293,12 @@ coding or not, the default value is 1. 0 means not check and opposite side.
  * @param Buffer The buffer of receiving message in case. Should be largely.
  * @retval bool True means subscribe succesfully and opposite for False.
  */
+
+/* Support Functions */
+/**
+ * @brief Handle Buffer data
+ * @retval void
+ */
+void handle_buffer();
 
 #endif /* __PICO_LIBRARY_H_ */

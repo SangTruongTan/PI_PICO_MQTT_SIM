@@ -55,9 +55,13 @@ int main() {
 
     // MQTT example
     // uart_puts(uart0, "Connecting to MQTT Server.....");
-    // mqtt_start();
-    // mqtt_acquire_client(0, "SangTruongTan\083");
-    // mqtt_connect_server(0, "tcp://test.mosquitto.org:1883", 90, 1);
+    // if (mqtt_start()) {
+    //     mqtt_acquire_client(0, "SangTruongTan\083");
+    //     if (mqtt_connect_server(0, "tcp://test.mosquitto.org:1883", 90, 1)) {
+    //         uart_puts(uart0, "Connected to MQTT Server successfully!");
+    //         // Do something
+    //     }
+    // }
     //Loop forever
     while(1) {
         // Using for debuging Module SIM
