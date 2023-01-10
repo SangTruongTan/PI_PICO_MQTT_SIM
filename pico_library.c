@@ -51,12 +51,8 @@ void picolib_init(PicoLibrary_t *PicoParam) {
 void sim_init(uart_inst_t *Uart) {
     LOG("Initializing SIM module\r\n");
     sim_send_test_command(Uart);
-    sim_forward_command(Uart, "AT&F");
-    sim_forward_command(Uart, "ATE0");
-    sim_forward_buffer(Uart);
-    sim_at_netclose(Uart);
-    sleep_ms(2000);  // Wait 2s before turning on network
-    sim_at_netopen(Uart);
+    sim_forward_command(Uart, "AT&F\r");
+    sim_forward_command(Uart, "ATE0\r");
 }
 
 bool picolib_process(char *Buffer) {
@@ -100,11 +96,15 @@ bool picolib_process(char *Buffer) {
 }
 
 void at_command_bio_forward(uart_inst_t *DebugUart, uart_inst_t *UartSim) {
-    char Output[2] = {'\0', '\0'};
+    LOG("Disable Uart ISR before comming to the loop...");
+    irq_set_(UART_IRQ, false);
+    uart_set_irq_enables(mHandler->uartId, false, false);
     while (1) {
         if (uart_is_readable(DebugUart)) {
             uart_putc(UartSim, uart_getc(DebugUart));
-            sim_forward_buffer(UartSim);
+        }
+        if (uart_is_readable(UartSim)) {
+            uart_putc(DebugUart, uart_getc(UartSim));
         }
     }
 }
@@ -134,12 +134,12 @@ void sim_send_test_command(uart_inst_t *Uart) {
 }
 
 void sim_forward_command(uart_inst_t *Uart, char *Cmd) {
-    char *Buffer = malloc(10);
+    char *Buffer = malloc(32);
     sim_send_at_command(Uart, Cmd);
     LOG(Cmd);
-    for (int i = 0; i < 4; i++) {
-        memset(Buffer, '\0', 10);
-        if (sim_receive_at_command(Uart, Buffer, '\n')) {
+    sleep_ms(1000);
+    while (Detect_Char(mPico->RingHandler, '\n')) {
+        if (sim_receive_at_command(mPico->uartId, Buffer, '\n')) {
             LOG(Buffer);
         }
     }
@@ -165,14 +165,6 @@ bool sim_receive_at_command(uart_inst_t *Uart, char *Buffer, char Delimiter) {
         return true;
     else
         return false;
-}
-
-void sim_forward_buffer(uart_inst_t *Uart) {
-    char Output[2] = {'\0', '\0'};
-    while (uart_is_readable(Uart)) {
-        Output[0] = uart_getc(Uart);
-        LOG(Output);
-    }
 }
 
 void sim_at_netclose(uart_inst_t *Uart) {

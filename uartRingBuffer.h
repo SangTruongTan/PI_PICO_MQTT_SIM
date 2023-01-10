@@ -36,7 +36,7 @@
 
 /* Private defines -----------------------------------------------------------*/
 #define RING_BUFFER_SIZE 256
-#define RING_RX_BUFFER 64
+#define RING_RX_BUFFER 200
 
 // define UART_RING_BUFFER_DEBUG 1
 

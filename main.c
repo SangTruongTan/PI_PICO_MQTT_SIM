@@ -27,10 +27,20 @@
 /* Private includes ----------------------------------------------------------*/
 
 /* Private typedef -----------------------------------------------------------*/
+// SIM module Uart
 #define UART_ID uart1
 #define UART_TX_PIN 8
 #define UART_RX_PIN 9
 #define BAUDRATE 115200
+
+// Debugging Uart
+#define DEBUG_UART_ID uart0
+#define DEBUG_TX_PIN 0
+#define DEBUG_RX_PIN 1
+#define DEBUG_BAUDRATE 115200
+
+//LOG Lines
+#define LOG(X) uart_puts(DEBUG_UART_ID, X)
 
 /* Private define ------------------------------------------------------------*/
 
@@ -44,6 +54,13 @@ PicoLibrary_t mPicoLib;
 /* Private user code ---------------------------------------------------------*/
 int main() {
     stdio_init_all();
+    // Set up our UART with the required speed.
+    uart_init(DEBUG_UART_ID, DEBUG_BAUDRATE);
+    // Set the TX and RX pins by using the function select on the GPIO
+    // Set datasheet for more information on function select
+    gpio_set_function(DEBUG_TX_PIN, GPIO_FUNC_UART);
+    gpio_set_function(DEBUG_RX_PIN, GPIO_FUNC_UART);
+
     // Initialize library parameter
     mPicoLib.uartId = UART_ID;
     mPicoLib.baudrate = BAUDRATE;
@@ -54,14 +71,15 @@ int main() {
     picolib_init(&mPicoLib);
 
     // MQTT example
-    // uart_puts(uart0, "Connecting to MQTT Server.....");
-    // if (mqtt_start()) {
-    //     mqtt_acquire_client(0, "SangTruongTan\083");
-    //     if (mqtt_connect_server(0, "tcp://test.mosquitto.org:1883", 90, 1)) {
-    //         uart_puts(uart0, "Connected to MQTT Server successfully!");
-    //         // Do something
-    //     }
-    // }
+    LOG("Connecting to MQTT Server.....");
+    if (mqtt_start()) {
+        LOG("MQTT started successfully!");
+        mqtt_acquire_client(0, "SangTruongTan\083");
+        if (mqtt_connect_server(0, "tcp://test.mosquitto.org:1883", 90, 1)) {
+            LOG("Connected to MQTT Server successfully!");
+            // Do something
+        }
+    }
     //Loop forever
     while(1) {
         // Using for debuging Module SIM

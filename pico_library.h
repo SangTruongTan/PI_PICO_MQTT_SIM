@@ -120,13 +120,6 @@ void sim_send_at_command(uart_inst_t *Uart, char *buffer);
 bool sim_receive_at_command(uart_inst_t *Uart, char *Buffer, char Delimiter);
 
 /**
- * @brief Flushing buffer by forwarding all to terminal if enabled.
- * @param Uart The pointer of uart instance.
- * @retval void
- */
-void sim_forward_buffer(uart_inst_t *Uart);
-
-/**
  * @brief Send AT Netclose
  * @param Uart The pointer of uart instance.
  * @retval void
