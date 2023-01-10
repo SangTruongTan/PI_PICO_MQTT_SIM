@@ -257,6 +257,7 @@ client. The range of permitted values is 0 to 1.
  * @param PubTopic The topic of PUBLISH message.
  * @retval bool True means subscribe succesfully and opposite for False.
  */
+bool mqtt_public_topic(uint8_t ClientIdx, char *PubTopic);
 
 /**
  * @brief MQTT PUBLISH Payload message
@@ -265,6 +266,7 @@ client. The range of permitted values is 0 to 1.
  * @param Message The message of PUBLISH message.
  * @retval bool True means subscribe succesfully and opposite for False.
  */
+bool mqtt_public_message(uint8_t ClientIdx, char *Message);
 
 /**
  * @brief MQTT PUBLISH message to server
@@ -275,6 +277,7 @@ client. The range of permitted values is 0 to 1.
 60s to 180s.
  * @retval bool True means subscribe succesfully and opposite for False.
  */
+bool mqtt_public_to_server(uint8_t ClientIdx, int Qos, uint8_t PubTimeout);
 
 /**
  * @brief MQTT Configure Context

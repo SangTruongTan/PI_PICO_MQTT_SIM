@@ -122,7 +122,7 @@ void sim_send_test_command(uart_inst_t *Uart) {
             if (sim_receive_at_command(Uart, Buffer, '\n')) {
                 sprintf(Out, "Len:%d=>%s\r\n", strlen(Buffer), Buffer);
                 LOG(Out);
-                if (strcmp(Buffer, "OK\r\n")) {
+                if (strstr(Buffer, "OK")) {
                     LOG("Sim is ready\r\n");
                     free(Buffer);
                     free(Out);
@@ -318,6 +318,39 @@ bool mqtt_unsubscribe_message(uint8_t ClientIdx, char *Message) {
     return retval;
 }
 
+bool mqtt_public_topic(uint8_t ClientIdx, char *PubTopic) {
+    bool retval = false;
+    char *Head = "AT+CMQTTTOPIC=";
+    char *Buffer = malloc(100);
+    sprintf(Buffer, "%s%u,%d\r", Head, ClientIdx, strlen(PubTopic));
+    LOG(Buffer);
+    if (mqtt_support_send(Buffer, PubTopic)) retval = true;
+    free(Buffer);
+    return retval;
+}
+
+bool mqtt_public_message(uint8_t ClientIdx, char *Message) {
+    bool retval = false;
+    char *Head = "AT+CMQTTPAYLOAD=";
+    char *Buffer = malloc(100);
+    sprintf(Buffer, "%s%u,%d\r", Head, ClientIdx, strlen(Message));
+    LOG(Buffer);
+    if (mqtt_support_send(Buffer, Message)) retval = true;
+    free(Buffer);
+    return retval;
+}
+
+bool mqtt_public_to_server(uint8_t ClientIdx, int Qos, uint8_t PubTimeout) {
+    bool retval = false;
+    char *Head = "AT+CMQTTPUB=";
+    char *Buffer = malloc(100);
+    sprintf(Buffer, "%s%u,%d,%d\r", Head, ClientIdx, Qos, PubTimeout);
+    LOG(Buffer);
+    sim_forward_command(mPico->uartId, Buffer);
+    free(Buffer);
+    return true;
+}
+
 bool sms_send(char *PhoneNumber, char *Text) {
     bool retval = false;
     char *Head = "AT+CMGS=";
@@ -338,10 +371,10 @@ void handle_buffer() {
 }
 
 bool mqtt_support_send(char *Cmd, char *Message) {
+    handle_buffer();
     sim_send_at_command(mPico->uartId, Cmd);
     sleep_ms(100);
     mPico->MorethanSymbol = false;
-    handle_buffer();
     if (mPico->MorethanSymbol) {
         sim_send_at_command(mPico->uartId, Message);
         return true;
