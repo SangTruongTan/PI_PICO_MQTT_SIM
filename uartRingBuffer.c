@@ -126,8 +126,7 @@ int get_peek(RingHandler_t *RingHandler, uint8_t *Buffer, uint16_t Size) {
 void uart_RxEventCallback() {
     int Size = 0;
     // Read data from uart termianal
-    while (uart_is_readable(mHandler->uartId) &&
-           Size < RING_RX_BUFFER) {
+    while (uart_is_readable(mHandler->uartId) && Size < RING_RX_BUFFER) {
         mHandler->RxBuffer[Size] = uart_getc(mHandler->uartId);
         Size++;
     }

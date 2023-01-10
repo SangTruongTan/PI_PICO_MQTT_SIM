@@ -57,8 +57,8 @@ void sim_init(uart_inst_t *Uart) {
 
 bool picolib_process(char *Buffer) {
     bool retval = false;
-    LOG(Buffer);
     if (strlen(Buffer) > 2) {
+        LOG(Buffer);
         if (strstr(Buffer, "OK")) {
             retval = false;
         } else if (strstr(Buffer, "+CMQTTSTART:")) {
@@ -89,6 +89,7 @@ bool picolib_process(char *Buffer) {
             }
         }
     } else if (strstr(Buffer, ">")) {
+        LOG(Buffer);
         mPico->MorethanSymbol = true;
         retval = true;
     }
@@ -97,8 +98,9 @@ bool picolib_process(char *Buffer) {
 
 void at_command_bio_forward(uart_inst_t *DebugUart, uart_inst_t *UartSim) {
     LOG("Disable Uart ISR before comming to the loop...");
-    irq_set_(UART_IRQ, false);
-    uart_set_irq_enables(mHandler->uartId, false, false);
+    int UART_IRQ = mPico->uartId == uart0 ? UART0_IRQ : UART1_IRQ;
+    irq_set_enabled(UART_IRQ, false);
+    uart_set_irq_enables(mPico->uartId, false, false);
     while (1) {
         if (uart_is_readable(DebugUart)) {
             uart_putc(UartSim, uart_getc(DebugUart));
@@ -122,15 +124,15 @@ void sim_send_test_command(uart_inst_t *Uart) {
                 LOG(Out);
                 if (strcmp(Buffer, "OK\r\n")) {
                     LOG("Sim is ready\r\n");
-                    break;
+                    free(Buffer);
+                    free(Out);
+                    return;
                 }
             }
         }
         LOG("Connecting with SIM failed, try again...\r\n");
         sleep_ms(2000);
     }
-    free(Buffer);
-    free(Out);
 }
 
 void sim_forward_command(uart_inst_t *Uart, char *Cmd) {
@@ -138,7 +140,7 @@ void sim_forward_command(uart_inst_t *Uart, char *Cmd) {
     sim_send_at_command(Uart, Cmd);
     LOG(Cmd);
     sleep_ms(1000);
-    while (Detect_Char(mPico->RingHandler, '\n')) {
+    while (Detect_Char(&mPico->RingHandler, '\n')) {
         if (sim_receive_at_command(mPico->uartId, Buffer, '\n')) {
             LOG(Buffer);
         }
@@ -154,7 +156,8 @@ bool sim_receive_at_command(uart_inst_t *Uart, char *Buffer, char Delimiter) {
     int timeout = 10;
     while (timeout > 0) {
         if (Is_available(&mPico->RingHandler)) {
-            int Length = Get_String_NonBlocking(&mPico->RingHandler, Buffer, '\n');
+            int Length =
+                Get_String_NonBlocking(&mPico->RingHandler, Buffer, '\n');
             if (Length > 2) break;
         } else {
             sleep_ms(1);
@@ -203,7 +206,22 @@ bool mqtt_start() {
     sleep_ms(2000);
     mPico->MqttStarted = false;
     handle_buffer();
-    if(mPico->MqttStarted) return true; else return false;
+    if (mPico->MqttStarted)
+        return true;
+    else
+        return false;
+}
+
+bool mqtt_stop() {
+    char *Cmd = "AT+CMQTTSTOP\r";
+    sim_send_at_command(mPico->uartId, Cmd);
+    LOG(Cmd);
+    sleep_ms(1000);
+    handle_buffer();
+    if (mPico->MqttStarted == false)
+        return true;
+    else
+        return false;
 }
 
 void mqtt_acquire_client(uint8_t ClientIdx, char *ClientId) {
@@ -217,26 +235,117 @@ void mqtt_acquire_client(uint8_t ClientIdx, char *ClientId) {
     free(Buffer);
 }
 
+void mqtt_release_client(uint8_t ClientIdx) {
+    char *Head = "AT+CMQTTREL=";
+    char *Buffer = malloc(50);
+    sprintf(Buffer, "%s%u\r", Head, ClientIdx);
+    sim_send_at_command(mPico->uartId, Buffer);
+    LOG(Buffer);
+    free(Buffer);
+}
+
 bool mqtt_connect_server(uint8_t ClientIdx, char *Server,
                          uint16_t KeepAliveTime, uint8_t CleanSession) {
     char *Head = "AT+CMQTTCONNECT=";
     char *Buffer = malloc(100);
-    sprintf(Buffer, "%s%u,\"%s\",%u,%u\r", Head, ClientIdx, Server, KeepAliveTime,
-            CleanSession);
+    sprintf(Buffer, "%s%u,\"%s\",%u,%u\r", Head, ClientIdx, Server,
+            KeepAliveTime, CleanSession);
     sim_send_at_command(mPico->uartId, Buffer);
     LOG(Buffer);
     sleep_ms(2000);
     free(Buffer);
     mPico->ConnectionAvailable = false;
     handle_buffer();
-    if (mPico->ConnectionAvailable) return true; else return false;
+    if (mPico->ConnectionAvailable)
+        return true;
+    else
+        return false;
+}
+
+bool mqtt_disconnect_server(uint8_t ClientIdx, uint8_t Timeout) {
+    bool retval = false;
+    char *Head = "AT+CMQTTDISC=";
+    char *Buffer = malloc(100);
+    sprintf("%s%u,%u\r", Head, ClientIdx, Timeout);
+    sim_send_at_command(mPico->uartId, Buffer);
+    LOG(Buffer);
+    free(Buffer);
+    sleep_ms(500);
+    handle_buffer();
+    if (mPico->ConnectionAvailable == false) retval = true;
+    return retval;
+}
+
+bool mqtt_subscribe_topic(uint8_t ClientIdx, char *SubTopic, int Qos) {
+    bool retval = false;
+    char *Head = "AT+CMQTTSUBTOPIC=";
+    char *Buffer = malloc(100);
+    sprintf(Buffer, "%s%u,%d,%d\r", Head, ClientIdx, strlen(SubTopic), Qos);
+    LOG(Buffer);
+    if (mqtt_support_send(Buffer, SubTopic)) retval = true;
+    free(Buffer);
+    return retval;
+}
+
+bool mqtt_subscribe_message(uint8_t ClientIdx, char *Message, int Qos) {
+    bool retval = false;
+    char *Head = "AT+CMQTTSUB=";
+    char *Buffer = malloc(100);
+    sprintf(Buffer, "%s%u,%d,%d,1\r", Head, ClientIdx, strlen(Message), Qos);
+    if (mqtt_support_send(Buffer, Message)) retval = true;
+    free(Buffer);
+    return retval;
+}
+
+bool mqtt_unsubscribe_topic(uint8_t ClientIdx, char *UnSubTopic, int Qos) {
+    bool retval = false;
+    char *Head = "AT+CMQTTUNSUBTOPIC=";
+    char *Buffer = malloc(100);
+    sprintf(Buffer, "%s%u,%d,%d\r", Head, ClientIdx, strlen(UnSubTopic), Qos);
+    LOG(Buffer);
+    if (mqtt_support_send(Buffer, UnSubTopic)) retval = true;
+    free(Buffer);
+    return retval;
+}
+
+bool mqtt_unsubscribe_message(uint8_t ClientIdx, char *Message) {
+    bool retval = false;
+    char *Head = "AT+CMQTTUNSUB=";
+    char *Buffer = malloc(100);
+    sprintf(Buffer, "%s%u,%d,1\r", Head, ClientIdx, strlen(Message));
+    if (mqtt_support_send(Buffer, Message)) retval = true;
+    free(Buffer);
+    return retval;
+}
+
+bool sms_send(char *PhoneNumber, char *Text) {
+    bool retval = false;
+    char *Head = "AT+CMGS=";
+    char *Buffer = malloc(50);
+    sprintf(Buffer, "%s%s\r", Head, PhoneNumber);
+    if (mqtt_support_send(Buffer, Text)) retval = true;
+    free(Buffer);
+    return retval;
 }
 
 void handle_buffer() {
     char *Buffer = malloc(128);
-    while(Detect_Char(&mPico->RingHandler, '\n')) {
+    while (Detect_Char(&mPico->RingHandler, '\n')) {
         Get_String_NonBlocking(&mPico->RingHandler, Buffer, '\n');
         picolib_process(Buffer);
     }
     free(Buffer);
+}
+
+bool mqtt_support_send(char *Cmd, char *Message) {
+    sim_send_at_command(mPico->uartId, Cmd);
+    sleep_ms(100);
+    mPico->MorethanSymbol = false;
+    handle_buffer();
+    if (mPico->MorethanSymbol) {
+        sim_send_at_command(mPico->uartId, Message);
+        return true;
+    } else {
+        return false;
+    }
 }

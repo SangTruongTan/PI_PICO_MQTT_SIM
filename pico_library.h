@@ -142,6 +142,12 @@ void sim_at_netopen(uart_inst_t *Uart);
 bool mqtt_start();
 
 /**
+ * @brief MQTT Stop
+ * @retval bool True means started succesfully and opposite for False.
+ */
+bool mqtt_stop();
+
+/**
  * @brief MQTT Acquire Client
  * @param ClientIdx The client index. A numeric parameter that identifies a
 client. The range of permitted values is 0 to 1.
@@ -154,8 +160,9 @@ void mqtt_acquire_client(uint8_t ClientIdx, char *ClientId);
  * @brief MQTT Release Client
  * @param ClientIdx The client index. A numeric parameter that identifies a
 client. The range of permitted values is 0 to 1.
- * @retval bool True means subscribe succesfully and opposite for False.
+ * @retval void
  */
+void mqtt_release_client(uint8_t ClientIdx);
 
 /**
  * @brief MQTT Set SSL context
@@ -202,6 +209,7 @@ client. The range of permitted values is 0 to 1.
  @ @param Timeout The timeout value for disconnection. The unit is second. The
 range is 60s to 180s. The default value is 0s (not set the timeout value)
  */
+bool mqtt_disconnect_server(uint8_t ClientIdx, uint8_t Timeout);
 
 /**
  * @brief MQTT SUBSCRIBE TOPIC message
@@ -211,6 +219,7 @@ client. The range of permitted values is 0 to 1.
  * @param Qos The publish message’s qos. The range is from 0 to 2.
  * @retval bool True means subscribe succesfully and opposite for False.
  */
+bool mqtt_subscribe_topic(uint8_t ClientIdx, char *SubTopic, int Qos);
 
 /**
  * @brief MQTT SUBSCRIBE message
@@ -220,14 +229,17 @@ client. The range of permitted values is 0 to 1.
  * @param Qos The publish message’s qos. The range is from 0 to 2.
  * @retval bool True means subscribe succesfully and opposite for False.
  */
+bool mqtt_subscribe_message(uint8_t ClientIdx, char *Message, int Qos);
 
 /**
  * @brief MQTT UNSUBSCRIBE TOPIC message
  * @param ClientIdx The client index. A numeric parameter that identifies a
 client. The range of permitted values is 0 to 1.
  * @param UnsubTopic The topic of UNSUBSRIBE message.
+ * @param Qos The publish message’s qos. The range is from 0 to 2.
  * @retval bool True means subscribe succesfully and opposite for False.
  */
+bool mqtt_unsubscribe_topic(uint8_t ClientIdx, char *UnSubTopic, int Qos);
 
 /**
  * @brief MQTT UNSUBSCRIBE message
@@ -236,6 +248,7 @@ client. The range of permitted values is 0 to 1.
  * @param Message The message of UNSUBSCRIBE message.
  * @retval bool True means subscribe succesfully and opposite for False.
  */
+bool mqtt_unsubscribe_message(uint8_t ClientIdx, char *Message);
 
 /**
  * @brief MQTT PUBLISH TOPIC message
@@ -277,9 +290,10 @@ coding or not, the default value is 1. 0 means not check and opposite side.
 /**
  * @brief SMS select message format. Default as Text mode.
  * @param PhoneNumber The destination phone number. For instance, "+8412345789".
- * @param Text The text message.
+ * @param Text The text message. "ABCD\032" - '\032' is very important.
  * @param bool True means subscribe succesfully and opposite for False.
  */
+bool sms_send(char *PhoneNumber, char *Text);
 
 /**
  * @brief SMS Read unread message
@@ -293,5 +307,13 @@ coding or not, the default value is 1. 0 means not check and opposite side.
  * @retval void
  */
 void handle_buffer();
+
+/**
+ * @brief Support function to send mqtt message
+ * @param Cmd The command of the message.
+ * @param Message The buffer of the message.
+ * @retval bool True means subscribe succesfully and opposite for False.
+ */
+bool mqtt_support_send(char *Cmd, char *Message);
 
 #endif /* __PICO_LIBRARY_H_ */

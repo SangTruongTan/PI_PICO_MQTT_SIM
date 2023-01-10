@@ -73,4 +73,9 @@ CMakeFiles/repository.dir/main.c.obj: \
  C:\Users\sangt\OneDrive\Job\Upwork_SIM_MQTT\Repository\pico_library.h \
  c:\vsarm\armcc\102021~1.10\arm-none-eabi\include\stdlib.h \
  c:\vsarm\armcc\102021~1.10\arm-none-eabi\include\machine\stdlib.h \
- c:\vsarm\armcc\102021~1.10\arm-none-eabi\include\alloca.h
+ c:\vsarm\armcc\102021~1.10\arm-none-eabi\include\alloca.h \
+ C:\Users\sangt\OneDrive\Job\Upwork_SIM_MQTT\Repository\uartRingBuffer.h \
+ c:\vsarm\armcc\102021~1.10\arm-none-eabi\include\string.h \
+ c:\vsarm\armcc\102021~1.10\arm-none-eabi\include\sys\_locale.h \
+ c:\vsarm\armcc\102021~1.10\arm-none-eabi\include\strings.h \
+ c:\vsarm\armcc\102021~1.10\arm-none-eabi\include\sys\string.h

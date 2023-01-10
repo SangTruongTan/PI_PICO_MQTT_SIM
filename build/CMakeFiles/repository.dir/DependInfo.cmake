@@ -142,6 +142,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "C:/VSARM/sdk/pico/pico-sdk/src/rp2_common/pico_stdlib/stdlib.c" "CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/pico_stdlib/stdlib.c.obj" "gcc" "CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/pico_stdlib/stdlib.c.obj.d"
   "C:/Users/sangt/OneDrive/Job/Upwork_SIM_MQTT/Repository/main.c" "CMakeFiles/repository.dir/main.c.obj" "gcc" "CMakeFiles/repository.dir/main.c.obj.d"
   "C:/Users/sangt/OneDrive/Job/Upwork_SIM_MQTT/Repository/pico_library.c" "CMakeFiles/repository.dir/pico_library.c.obj" "gcc" "CMakeFiles/repository.dir/pico_library.c.obj.d"
+  "C:/Users/sangt/OneDrive/Job/Upwork_SIM_MQTT/Repository/uartRingBuffer.c" "CMakeFiles/repository.dir/uartRingBuffer.c.obj" "gcc" "CMakeFiles/repository.dir/uartRingBuffer.c.obj.d"
   "C:/VSARM/sdk/pico/pico-sdk/src/rp2_common/pico_standard_link/new_delete.cpp" "CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/pico_standard_link/new_delete.cpp.obj" "gcc" "CMakeFiles/repository.dir/C_/VSARM/sdk/pico/pico-sdk/src/rp2_common/pico_standard_link/new_delete.cpp.obj.d"
   )
 

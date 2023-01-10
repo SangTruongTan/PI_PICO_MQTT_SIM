@@ -82,6 +82,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/repository.dir/main.c.obj.d"
   "CMakeFiles/repository.dir/pico_library.c.obj"
   "CMakeFiles/repository.dir/pico_library.c.obj.d"
+  "CMakeFiles/repository.dir/uartRingBuffer.c.obj"
+  "CMakeFiles/repository.dir/uartRingBuffer.c.obj.d"
   "repository.elf"
   "repository.elf.manifest"
   "repository.pdb"

@@ -1171,6 +1171,30 @@ pico_library.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\repository.dir\build.make CMakeFiles/repository.dir/pico_library.c.s
 .PHONY : pico_library.c.s
 
+uartRingBuffer.obj: uartRingBuffer.c.obj
+.PHONY : uartRingBuffer.obj
+
+# target to build an object file
+uartRingBuffer.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\repository.dir\build.make CMakeFiles/repository.dir/uartRingBuffer.c.obj
+.PHONY : uartRingBuffer.c.obj
+
+uartRingBuffer.i: uartRingBuffer.c.i
+.PHONY : uartRingBuffer.i
+
+# target to preprocess a source file
+uartRingBuffer.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\repository.dir\build.make CMakeFiles/repository.dir/uartRingBuffer.c.i
+.PHONY : uartRingBuffer.c.i
+
+uartRingBuffer.s: uartRingBuffer.c.s
+.PHONY : uartRingBuffer.s
+
+# target to generate assembly for a file
+uartRingBuffer.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\repository.dir\build.make CMakeFiles/repository.dir/uartRingBuffer.c.s
+.PHONY : uartRingBuffer.c.s
+
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -1306,6 +1330,9 @@ help:
 	@echo ... pico_library.obj
 	@echo ... pico_library.i
 	@echo ... pico_library.s
+	@echo ... uartRingBuffer.obj
+	@echo ... uartRingBuffer.i
+	@echo ... uartRingBuffer.s
 .PHONY : help
 
 

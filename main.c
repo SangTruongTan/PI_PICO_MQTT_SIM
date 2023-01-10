@@ -83,6 +83,6 @@ int main() {
     //Loop forever
     while(1) {
         // Using for debuging Module SIM
-        // at_command_bio_forward(uart0, uart1);
+        at_command_bio_forward(uart0, uart1);
     }
 }

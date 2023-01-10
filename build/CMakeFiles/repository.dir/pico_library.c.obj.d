@@ -74,6 +74,7 @@ CMakeFiles/repository.dir/pico_library.c.obj: \
  C:\VSARM\sdk\pico\pico-sdk\src\rp2040\hardware_regs\include/hardware/regs/intctrl.h \
  C:\VSARM\sdk\pico\pico-sdk\src\rp2040\hardware_regs\include/hardware/regs/m0plus.h \
  C:\VSARM\sdk\pico\pico-sdk\src\rp2_common\pico_stdio_uart\include/pico/stdio_uart.h \
+ C:\Users\sangt\OneDrive\Job\Upwork_SIM_MQTT\Repository\uartRingBuffer.h \
  c:\vsarm\armcc\102021~1.10\arm-none-eabi\include\string.h \
  c:\vsarm\armcc\102021~1.10\arm-none-eabi\include\sys\_locale.h \
  c:\vsarm\armcc\102021~1.10\arm-none-eabi\include\strings.h \
