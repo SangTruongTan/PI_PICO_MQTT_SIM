@@ -57,41 +57,42 @@ void sim_init(uart_inst_t *Uart) {
 
 bool picolib_process(char *Buffer) {
     bool retval = false;
-    if (strlen(Buffer) > 2) {
-        LOG(Buffer);
-        if (strstr(Buffer, "OK")) {
-            retval = false;
-        } else if (strstr(Buffer, "+CMQTTSTART:")) {
-            if (strstr(Buffer, "0")) {
-                mPico->MqttStarted = true;
-                retval = true;
-            }
-        } else if (strstr(Buffer, "+CMQTTCONNECT:")) {
-            if (strstr(Buffer, ",0")) {
-                mPico->ConnectionAvailable = true;
-                retval = true;
-            }
-        } else if (strstr(Buffer, "+CMQTTRXTOPIC:")) {
-            mPico->RxTopic = true;
-            retval = true;
-        } else if (strstr(Buffer, "+CMQTTRXPAYLOAD:")) {
-            mPico->RxPayload = true;
-            retval = true;
-        } else if (strstr(Buffer, "+CMQTTSTOP:")) {
-            if (strstr(Buffer, "0")) {
-                mPico->MqttStarted = false;
-                retval = true;
-            }
-        } else if (strstr(Buffer, "+CMQTTDISC:")) {
-            if (strstr(Buffer, "0")) {
-                mPico->ConnectionAvailable = false;
-                retval = true;
-            }
-        }
-    } else if (strstr(Buffer, ">")) {
+    LOG(Buffer);
+    if (strstr(Buffer, ">")) {
         LOG(Buffer);
         mPico->MorethanSymbol = true;
         retval = true;
+    }
+    if (strstr(Buffer, "OK")) {
+        retval = false;
+    } else if (strcmp(Buffer, "\r\n")) {
+        retval = false;
+    } else if (strstr(Buffer, "+CMQTTSTART:")) {
+        if (strstr(Buffer, "0")) {
+            mPico->MqttStarted = true;
+            retval = true;
+        }
+    } else if (strstr(Buffer, "+CMQTTCONNECT:")) {
+        if (strstr(Buffer, ",0")) {
+            mPico->ConnectionAvailable = true;
+            retval = true;
+        }
+    } else if (strstr(Buffer, "+CMQTTRXTOPIC:")) {
+        mPico->RxTopic = true;
+        retval = true;
+    } else if (strstr(Buffer, "+CMQTTRXPAYLOAD:")) {
+        mPico->RxPayload = true;
+        retval = true;
+    } else if (strstr(Buffer, "+CMQTTSTOP:")) {
+        if (strstr(Buffer, "0")) {
+            mPico->MqttStarted = false;
+            retval = true;
+        }
+    } else if (strstr(Buffer, "+CMQTTDISC:")) {
+        if (strstr(Buffer, "0")) {
+            mPico->ConnectionAvailable = false;
+            retval = true;
+        }
     }
     return retval;
 }
@@ -241,6 +242,8 @@ void mqtt_release_client(uint8_t ClientIdx) {
     sprintf(Buffer, "%s%u\r", Head, ClientIdx);
     sim_send_at_command(mPico->uartId, Buffer);
     LOG(Buffer);
+    sleep_ms(100);
+    handle_buffer();
     free(Buffer);
 }
 
@@ -347,6 +350,7 @@ bool mqtt_public_to_server(uint8_t ClientIdx, int Qos, uint8_t PubTimeout) {
     sprintf(Buffer, "%s%u,%d,%d\r", Head, ClientIdx, Qos, PubTimeout);
     LOG(Buffer);
     sim_forward_command(mPico->uartId, Buffer);
+    sleep_ms(100);
     free(Buffer);
     return true;
 }
@@ -367,6 +371,10 @@ void handle_buffer() {
         Get_String_NonBlocking(&mPico->RingHandler, Buffer, '\n');
         picolib_process(Buffer);
     }
+    while (Detect_Char(&mPico->RingHandler, '>')) {
+        Get_String_NonBlocking(&mPico->RingHandler, Buffer, '>');
+        picolib_process(Buffer);
+    }
     free(Buffer);
 }
 
@@ -375,8 +383,13 @@ bool mqtt_support_send(char *Cmd, char *Message) {
     sim_send_at_command(mPico->uartId, Cmd);
     sleep_ms(100);
     mPico->MorethanSymbol = false;
+    handle_buffer();
     if (mPico->MorethanSymbol) {
         sim_send_at_command(mPico->uartId, Message);
+        LOG(Message);
+        LOG("\r\n");
+        sleep_ms(100);
+        handle_buffer();
         return true;
     } else {
         return false;

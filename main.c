@@ -77,25 +77,17 @@ int main() {
         mqtt_acquire_client(0, "SangTruongTan\083");
         if (mqtt_connect_server(0, "tcp://test.mosquitto.org:1883", 90, 1)) {
             LOG("Connected to MQTT Server successfully!\r\n");
-            sleep_ms(1000);
             // Do something
             if (mqtt_subscribe_topic(0, "ChangeYourTopic", 0)) {
                 LOG("Subcribe successfully\r\n");
-                sleep_ms(1000);
-                handle_buffer();
                 mqtt_public_topic(0, "ChangeYourTopic");
-                sleep_ms(1000);
-                handle_buffer();
                 mqtt_public_message(0, "Hello1234");
-                sleep_ms(1000);
-                handle_buffer();
                 mqtt_public_to_server(0, 0, 120);
+                //Unsubscribe
+                mqtt_unsubscribe_topic(0, "ChangeYourTopic", 0);
             } else {
                 LOG("Subcribe unsuccessfully\r\n");
             }
-            sleep_ms(1000);
-            handle_buffer();
-            sleep_ms(1000);
             mqtt_disconnect_server(0, 120);
 
         }
