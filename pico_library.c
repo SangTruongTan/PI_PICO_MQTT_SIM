@@ -78,6 +78,11 @@ bool picolib_process(char *Buffer) {
             mPico->ConnectionAvailable = true;
             retval = true;
         }
+    } else if (strstr(Buffer, "+CMQTTSUB:")) {
+        if (strstr(Buffer, ",0")) {
+            mPico->PublicMsgSuc = true;
+            retval = true;
+        }
     } else if (strstr(Buffer, "+CMQTTRXSTART:")) {
         mPico->RxDetected = true;
         retval = true;
@@ -405,8 +410,9 @@ bool mqtt_public_to_server(uint8_t ClientIdx, int Qos, uint8_t PubTimeout) {
     LOG(Buffer);
     sim_forward_command(mPico->uartId, Buffer);
     sleep_ms(100);
+    mPico->PublicMsgSuc = false;
     handle_buffer();
-    if (mPico->OkDetected) {
+    if (mPico->PublicMsgSuc) {
         retval = true;
     }
     free(Buffer);

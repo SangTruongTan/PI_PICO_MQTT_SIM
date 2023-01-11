@@ -58,6 +58,7 @@ typedef struct {
     bool OkDetected;
     bool SmsDetected;
     bool is_sms_readable;
+    bool PublicMsgSuc;
     int pRxTopic;
     int pRxMsg;
     char RxTopic[PICO_RX_TOPIC_LENGTH];
