@@ -72,11 +72,13 @@ int main() {
 
     // MQTT example
     // Try to stop MQTT service first
+    mqtt_disconnect_server(0, 120);
+    mqtt_release_client(0);
     mqtt_stop();
     LOG("Connecting to MQTT Server.....\r\n");
     if (mqtt_start()) {
         LOG("MQTT started successfully!\r\n");
-        mqtt_acquire_client(0, "SangTruongTan\083");
+        mqtt_acquire_client(0, "SangTruongTan");
         if (mqtt_connect_server(0, "tcp://test.mosquitto.org:1883", 90, 1)) {
             LOG("Connected to MQTT Server successfully!\r\n");
             // Do something
@@ -85,16 +87,20 @@ int main() {
                 mqtt_public_topic(0, "ChangeYourTopic");
                 mqtt_public_message(0, "Hello1234");
                 mqtt_public_to_server(0, 0, 120);
-                //Unsubscribe
-                mqtt_unsubscribe_topic(0, "ChangeYourTopic", 0);
+                char *Buf = malloc(100);
+                //Receive Rx data
+                while (1) {
+                    if (mqtt_is_rx_readable()) {
+                        sprintf(Buf, "Topic RX:%s\r\n", mPicoLib.RxTopic);
+                        LOG(Buf);
+                        sprintf(Buf, "RX Payload:%s\r\n", mPicoLib.RxPayload);
+                        LOG(Buf);
+                    }
+                }
             } else {
                 LOG("Subcribe unsuccessfully\r\n");
             }
-            mqtt_disconnect_server(0, 120);
-
         }
-        mqtt_release_client(0);
-        mqtt_stop();
     }
     //Loop forever
     while(1) {

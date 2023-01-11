@@ -64,7 +64,8 @@ bool picolib_process(char *Buffer) {
         retval = true;
     }
     if (strstr(Buffer, "OK")) {
-        retval = false;
+        mPico->OkDetected = true;
+        retval = true;
     } else if (strcmp(Buffer, "\r\n")) {
         retval = false;
     } else if (strstr(Buffer, "+CMQTTSTART:")) {
@@ -77,11 +78,21 @@ bool picolib_process(char *Buffer) {
             mPico->ConnectionAvailable = true;
             retval = true;
         }
+    } else if (strstr(Buffer, "+CMQTTRXSTART:")) {
+        mPico->RxDetected = true;
+        retval = true;
     } else if (strstr(Buffer, "+CMQTTRXTOPIC:")) {
         mPico->RxTopic = true;
+        mPico->pRxTopic = 0;
         retval = true;
     } else if (strstr(Buffer, "+CMQTTRXPAYLOAD:")) {
+        mPico->RxTopic = false;
         mPico->RxPayload = true;
+        mPico->pRxMsg = 0;
+        retval = true;
+    } else if (strstr(Buffer, "+CMQTTRXEND:")) {
+        mPico->RxTopic = false;
+        mPico->RxPayload = false;
         retval = true;
     } else if (strstr(Buffer, "+CMQTTSTOP:")) {
         if (strstr(Buffer, "0")) {
@@ -93,6 +104,26 @@ bool picolib_process(char *Buffer) {
             mPico->ConnectionAvailable = false;
             retval = true;
         }
+    } else if (strstr(Buffer, "+CMGL:")) {
+        mPico->SmsDetected = true;
+        retval = true;
+    } else if (mPico->RxTopic) {
+        if (PICO_RX_TOPIC_LENGTH - mPico->pRxTopic >= strlen(Buffer)) {
+            strcpy(mPico->RxTopic + mPico->pRxTopic, Buffer);
+            mPico->pRxTopic += strlen(Buffer);
+            retval = true;
+        }
+    } else if (mPico->RxPayload) {
+        if (PICO_RX_MSG_LENGTH - mPico->pRxMsg >= strlen(Buffer)) {
+            strcpy(mPico->pRxMsg + mPico->pRxMsg, Buffer);
+            mPico->pRxMsg += strlen(Buffer);
+            retval = true;
+        }
+    } else if (mPico->SmsDetected) {
+            strcpy(mPico->SmsMsg, Buffer);
+            mPico->SmsDetected = false;
+            mPico->is_sms_readable = true;
+            retval = true;
     }
     return retval;
 }
@@ -247,6 +278,28 @@ void mqtt_release_client(uint8_t ClientIdx) {
     free(Buffer);
 }
 
+bool mqtt_will_topic(uint8_t ClientIdx, char *WillTopic) {
+    bool retval = false;
+    char *Head = "AT+CMQTTWILLTOPIC=";
+    char *Buffer = malloc(100);
+    sprintf(Buffer, "%s%u,%d\r", Head, ClientIdx, strlen(WillTopic));
+    LOG(Buffer);
+    if (mqtt_support_send(Buffer, Message)) retval = true;
+    free(Buffer);
+    return retval;
+}
+
+bool mqtt_will_message(uint8_t ClientIdx, char *Message, int Qos) {
+    bool retval = false;
+    char *Head = "AT+CMQTTWILLMSG=";
+    char *Buffer = malloc(100);
+    sprintf(Buffer, "%s%u,%d,%d\r", Head, ClientIdx, strlen(Message), Qos);
+    LOG(Buffer);
+    if (mqtt_support_send(Buffer, Message)) retval = true;
+    free(Buffer);
+    return retval;
+}
+
 bool mqtt_connect_server(uint8_t ClientIdx, char *Server,
                          uint16_t KeepAliveTime, uint8_t CleanSession) {
     char *Head = "AT+CMQTTCONNECT=";
@@ -347,12 +400,41 @@ bool mqtt_public_to_server(uint8_t ClientIdx, int Qos, uint8_t PubTimeout) {
     bool retval = false;
     char *Head = "AT+CMQTTPUB=";
     char *Buffer = malloc(100);
+    handle_buffer();
     sprintf(Buffer, "%s%u,%d,%d\r", Head, ClientIdx, Qos, PubTimeout);
     LOG(Buffer);
     sim_forward_command(mPico->uartId, Buffer);
     sleep_ms(100);
+    handle_buffer();
+    if (mPico->OkDetected) {
+        retval = true;
+    }
     free(Buffer);
     return true;
+}
+
+bool mqtt_configure_context(uint8_t ClientIdx, uint8_t CheckUtf8Flag) {
+    bool retval = false;
+    char *Head = "AT+CMQTTCFG=\"checkUTF8\",";
+    char *Buffer = malloc(100);
+    handle_buffer();
+    sprintf(Buffer, "%s%u,%u\r", Head, ClientIdx, CheckUtf8Flag);
+    LOG(Buffer);
+    sim_forward_command(mPico->uartId, Buffer);
+    sleep_ms(100);
+    handle_buffer();
+    if (mPico->OkDetected) {
+        retval = true;
+    }
+    free(Buffer);
+    return true;
+}
+
+bool mqtt_is_rx_readable() {
+    handle_buffer();
+    bool retval = mPico->RxDetected;
+    mPico->RxDetected = false;
+    return retval;
 }
 
 bool sms_send(char *PhoneNumber, char *Text) {
@@ -365,8 +447,24 @@ bool sms_send(char *PhoneNumber, char *Text) {
     return retval;
 }
 
+bool sms_read() {
+    bool retval = false;
+    char *Cmd = "AT+CMGL=\"REC UNREAD\"\r";
+    handle_buffer();
+    sim_forward_command(mPico->uartId, Cmd);
+    sleep_ms(100);
+    mPico->SmsDetected = false;
+    handle_buffer();
+    if (mPico->is_sms_readable) {
+        retval = true;
+    }
+    free(Buffer);
+    return true;
+}
+
 void handle_buffer() {
     char *Buffer = malloc(128);
+    reset_flags();
     while (Detect_Char(&mPico->RingHandler, '\n')) {
         Get_String_NonBlocking(&mPico->RingHandler, Buffer, '\n');
         picolib_process(Buffer);
@@ -379,10 +477,10 @@ void handle_buffer() {
 }
 
 bool mqtt_support_send(char *Cmd, char *Message) {
+    bool retval = false;
     handle_buffer();
     sim_send_at_command(mPico->uartId, Cmd);
     sleep_ms(100);
-    mPico->MorethanSymbol = false;
     handle_buffer();
     if (mPico->MorethanSymbol) {
         sim_send_at_command(mPico->uartId, Message);
@@ -390,8 +488,17 @@ bool mqtt_support_send(char *Cmd, char *Message) {
         LOG("\r\n");
         sleep_ms(100);
         handle_buffer();
-        return true;
+        if (mPico->OkDetected == true)
+            retval true;
     } else {
-        return false;
+        retval false;
     }
+    return retval;
+}
+
+void reset_flags() {
+    mPico->MorethanSymbol = false;
+    mPico->OkDetected = false;
+    mPico->RxTopic = false;
+    mPico->RxPayload = false;
 }
