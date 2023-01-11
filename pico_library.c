@@ -66,7 +66,7 @@ bool picolib_process(char *Buffer) {
     if (strstr(Buffer, "OK")) {
         mPico->OkDetected = true;
         retval = true;
-    } else if (strcmp(Buffer, "\r\n")) {
+    } else if (strcmp(Buffer, "\r\n") == 0) {
         retval = false;
     } else if (strstr(Buffer, "+CMQTTSTART:")) {
         if (strstr(Buffer, "0")) {
