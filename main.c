@@ -71,6 +71,8 @@ int main() {
     picolib_init(&mPicoLib);
 
     // MQTT example
+    // Try to stop MQTT service first
+    mqtt_stop();
     LOG("Connecting to MQTT Server.....\r\n");
     if (mqtt_start()) {
         LOG("MQTT started successfully!\r\n");
