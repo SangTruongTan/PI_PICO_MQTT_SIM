@@ -177,11 +177,7 @@ void sim_forward_command(uart_inst_t *Uart, char *Cmd) {
     sim_send_at_command(Uart, Cmd);
     LOG(Cmd);
     sleep_ms(1000);
-    while (Detect_Char(&mPico->RingHandler, '\n')) {
-        if (sim_receive_at_command(mPico->uartId, Buffer, '\n')) {
-            LOG(Buffer);
-        }
-    }
+    handle_buffer();
     free(Buffer);
 }
 
@@ -253,7 +249,7 @@ bool mqtt_stop() {
     char *Cmd = "AT+CMQTTSTOP\r";
     sim_send_at_command(mPico->uartId, Cmd);
     LOG(Cmd);
-    sleep_ms(1000);
+    sleep_ms(2000);
     handle_buffer();
     if (mPico->MqttStarted == false)
         return true;
@@ -278,7 +274,7 @@ void mqtt_release_client(uint8_t ClientIdx) {
     sprintf(Buffer, "%s%u\r", Head, ClientIdx);
     sim_send_at_command(mPico->uartId, Buffer);
     LOG(Buffer);
-    sleep_ms(100);
+    sleep_ms(2000);
     handle_buffer();
     free(Buffer);
 }
@@ -326,12 +322,13 @@ bool mqtt_connect_server(uint8_t ClientIdx, char *Server,
 bool mqtt_disconnect_server(uint8_t ClientIdx, uint8_t Timeout) {
     bool retval = false;
     char *Head = "AT+CMQTTDISC=";
-    char *Buffer = malloc(100);
-    sprintf("%s%u,%u\r", Head, ClientIdx, Timeout);
+    char *Buffer = malloc(32);
+    sprintf(Buffer, "%s%u,%u\r", Head, ClientIdx, Timeout);
+    sleep_ms(2000);
     sim_send_at_command(mPico->uartId, Buffer);
     LOG(Buffer);
     free(Buffer);
-    sleep_ms(500);
+    sleep_ms(2000);
     handle_buffer();
     if (mPico->ConnectionAvailable == false) retval = true;
     return retval;
@@ -453,10 +450,25 @@ bool mqtt_configure_context(uint8_t ClientIdx, uint8_t CheckUtf8Flag) {
 }
 
 bool mqtt_is_rx_readable() {
+    if (mPico->RxDetected == true) {
+        mPico->RxDetected = false;
+        return true;
+    }
     handle_buffer();
+    sleep_ms(1000);
     bool retval = mPico->RxDetected;
     mPico->RxDetected = false;
     return retval;
+}
+
+void sms_set_mode(uint8_t Mode) {
+    char *Head = "AT+CMGF=";
+    char *Buffer = malloc(16);
+    sprintf(Buffer, "%s%u\r", Head, Mode);
+    sim_send_at_command(mPico->uartId, Buffer);
+    sleep_ms(200);
+    handle_buffer();
+    sleep_ms(200);
 }
 
 bool sms_send(char *PhoneNumber, char *Text) {
@@ -466,7 +478,7 @@ bool sms_send(char *PhoneNumber, char *Text) {
     sprintf(Buffer, "%s%s\r", Head, PhoneNumber);
     if (mqtt_support_send(Buffer, Text)) retval = true;
     free(Buffer);
-    return retval;
+    free(Buffer);
 }
 
 bool sms_read() {
@@ -474,7 +486,7 @@ bool sms_read() {
     char *Cmd = "AT+CMGL=\"REC UNREAD\"\r";
     handle_buffer();
     sim_forward_command(mPico->uartId, Cmd);
-    sleep_ms(100);
+    sleep_ms(2000);
     mPico->SmsDetected = false;
     handle_buffer();
     if (mPico->is_sms_readable) {
@@ -521,6 +533,4 @@ bool mqtt_support_send(char *Cmd, char *Message) {
 void reset_flags() {
     mPico->MorethanSymbol = false;
     mPico->OkDetected = false;
-    mPico->IsRxTopic = false;
-    mPico->IsRxPayload = false;
 }

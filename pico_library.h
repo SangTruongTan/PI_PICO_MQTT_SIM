@@ -323,6 +323,12 @@ bool mqtt_configure_context(uint8_t ClientIdx, uint8_t CheckUtf8Flag);
 bool mqtt_is_rx_readable();
 
 /* SMS Support Functions */
+/**
+ * @brief Sms set mode
+ * @param Mode 0 for PDU and 1 for text mode
+ * @void
+*/
+void sms_set_mode(uint8_t Mode);
 
 /**
  * @brief SMS select message format. Default as Text mode.

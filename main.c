@@ -70,9 +70,22 @@ int main() {
     // Call pico library init
     picolib_init(&mPicoLib);
 
+    // SMS example
+    LOG("Testing SMS functionality\r\n");
+    sms_set_mode(1);
+    sms_send("YourPhoneNumber", "Hello, great\032");
+    LOG("Go to receive message\r\n");
+    char *Buffer = malloc(128);
+    while (1) {
+        if (sms_read()) {
+            sprintf(Buffer, "======>SMS;%s\r\n", mPicoLib.SmsMsg);
+            LOG(Buffer);
+        }
+        sleep_ms(500);
+    }
     // MQTT example
     // Try to stop MQTT service first
-    mqtt_disconnect_server(0, 120);
+    mqtt_disconnect_server(0, 90);
     mqtt_release_client(0);
     mqtt_stop();
     LOG("Connecting to MQTT Server.....\r\n");
@@ -89,6 +102,7 @@ int main() {
                 mqtt_public_to_server(0, 0, 120);
                 char *Buf = malloc(100);
                 mqtt_subscribe(0);
+                LOG("Going to receive loop\r\n");
                 //Receive Rx data
                 while (1) {
                     if (mqtt_is_rx_readable()) {
