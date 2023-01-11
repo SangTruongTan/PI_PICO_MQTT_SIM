@@ -78,7 +78,7 @@ bool picolib_process(char *Buffer) {
             mPico->ConnectionAvailable = true;
             retval = true;
         }
-    } else if (strstr(Buffer, "+CMQTTSUB:")) {
+    } else if (strstr(Buffer, "+CMQTTPUB:")) {
         if (strstr(Buffer, ",0")) {
             mPico->PublicMsgSuc = true;
             retval = true;
