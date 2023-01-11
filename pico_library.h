@@ -250,6 +250,14 @@ False.
 bool mqtt_subscribe_message(uint8_t ClientIdx, char *Message, int Qos);
 
 /**
+ * @brief MQTT SUBSCRIBE only
+ * @param ClientIdx The client index. A numeric parameter that identifies a
+client. The range of permitted values is 0 to 1.
+ * @retval bool True means send command succesfully and opposite for False.
+ */
+bool mqtt_subscribe(uint8_t ClientIdx);
+
+/**
  * @brief MQTT UNSUBSCRIBE TOPIC message
  * @param ClientIdx The client index. A numeric parameter that identifies a
 client. The range of permitted values is 0 to 1.

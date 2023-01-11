@@ -88,6 +88,7 @@ int main() {
                 mqtt_public_message(0, "Hello1234");
                 mqtt_public_to_server(0, 0, 120);
                 char *Buf = malloc(100);
+                mqtt_subscribe(0);
                 //Receive Rx data
                 while (1) {
                     if (mqtt_is_rx_readable()) {

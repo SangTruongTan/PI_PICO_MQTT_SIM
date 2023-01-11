@@ -357,6 +357,22 @@ bool mqtt_subscribe_message(uint8_t ClientIdx, char *Message, int Qos) {
     free(Buffer);
     return retval;
 }
+bool mqtt_subscribe(uint8_t ClientIdx) {
+    bool retval = false;
+    char *Head = "AT+CMQTTSUB=";
+    char *Buffer = malloc(32);
+    handle_buffer();
+    sprintf(Buffer, "%s%u\r", Head, ClientIdx);
+    LOG(Buffer);
+    sim_forward_command(mPico->uartId, Buffer);
+    sleep_ms(500);
+    handle_buffer();
+    if (mPico->OkDetected) {
+        retval = true;
+    }
+    free(Buffer);
+    return true;
+}
 
 bool mqtt_unsubscribe_topic(uint8_t ClientIdx, char *UnSubTopic, int Qos) {
     bool retval = false;
