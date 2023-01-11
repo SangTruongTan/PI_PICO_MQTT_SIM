@@ -82,17 +82,17 @@ bool picolib_process(char *Buffer) {
         mPico->RxDetected = true;
         retval = true;
     } else if (strstr(Buffer, "+CMQTTRXTOPIC:")) {
-        mPico->RxTopic = true;
+        mPico->IsRxTopic = true;
         mPico->pRxTopic = 0;
         retval = true;
     } else if (strstr(Buffer, "+CMQTTRXPAYLOAD:")) {
-        mPico->RxTopic = false;
-        mPico->RxPayload = true;
+        mPico->IsRxTopic = false;
+        mPico->IsRxPayload = true;
         mPico->pRxMsg = 0;
         retval = true;
     } else if (strstr(Buffer, "+CMQTTRXEND:")) {
-        mPico->RxTopic = false;
-        mPico->RxPayload = false;
+        mPico->IsRxTopic = false;
+        mPico->IsRxPayload = false;
         retval = true;
     } else if (strstr(Buffer, "+CMQTTSTOP:")) {
         if (strstr(Buffer, "0")) {
@@ -107,15 +107,15 @@ bool picolib_process(char *Buffer) {
     } else if (strstr(Buffer, "+CMGL:")) {
         mPico->SmsDetected = true;
         retval = true;
-    } else if (mPico->RxTopic) {
+    } else if (mPico->IsRxTopic) {
         if (PICO_RX_TOPIC_LENGTH - mPico->pRxTopic >= strlen(Buffer)) {
             strcpy(mPico->RxTopic + mPico->pRxTopic, Buffer);
             mPico->pRxTopic += strlen(Buffer);
             retval = true;
         }
-    } else if (mPico->RxPayload) {
+    } else if (mPico->IsRxPayload) {
         if (PICO_RX_MSG_LENGTH - mPico->pRxMsg >= strlen(Buffer)) {
-            strcpy(mPico->pRxMsg + mPico->pRxMsg, Buffer);
+            strcpy(mPico->RxMsg + mPico->pRxMsg, Buffer);
             mPico->pRxMsg += strlen(Buffer);
             retval = true;
         }
@@ -284,7 +284,7 @@ bool mqtt_will_topic(uint8_t ClientIdx, char *WillTopic) {
     char *Buffer = malloc(100);
     sprintf(Buffer, "%s%u,%d\r", Head, ClientIdx, strlen(WillTopic));
     LOG(Buffer);
-    if (mqtt_support_send(Buffer, Message)) retval = true;
+    if (mqtt_support_send(Buffer, WillTopic)) retval = true;
     free(Buffer);
     return retval;
 }
@@ -458,7 +458,7 @@ bool sms_read() {
     if (mPico->is_sms_readable) {
         retval = true;
     }
-    free(Buffer);
+    mPico->is_sms_readable = false;
     return true;
 }
 
@@ -489,9 +489,9 @@ bool mqtt_support_send(char *Cmd, char *Message) {
         sleep_ms(100);
         handle_buffer();
         if (mPico->OkDetected == true)
-            retval true;
+            retval = true;
     } else {
-        retval false;
+        retval = false;
     }
     return retval;
 }
@@ -499,6 +499,6 @@ bool mqtt_support_send(char *Cmd, char *Message) {
 void reset_flags() {
     mPico->MorethanSymbol = false;
     mPico->OkDetected = false;
-    mPico->RxTopic = false;
-    mPico->RxPayload = false;
+    mPico->IsRxTopic = false;
+    mPico->IsRxPayload = false;
 }

@@ -93,7 +93,7 @@ int main() {
                     if (mqtt_is_rx_readable()) {
                         sprintf(Buf, "Topic RX:%s\r\n", mPicoLib.RxTopic);
                         LOG(Buf);
-                        sprintf(Buf, "RX Payload:%s\r\n", mPicoLib.RxPayload);
+                        sprintf(Buf, "RX Payload:%s\r\n", mPicoLib.RxMsg);
                         LOG(Buf);
                     }
                 }

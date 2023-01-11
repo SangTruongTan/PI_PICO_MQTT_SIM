@@ -53,16 +53,16 @@ typedef struct {
     bool MqttStarted;
     bool MorethanSymbol;
     bool RxDetected;
-    bool RxTopic;
-    bool RxPayload;
+    bool IsRxTopic;
+    bool IsRxPayload;
     bool OkDetected;
     bool SmsDetected;
     bool is_sms_readable;
     int pRxTopic;
     int pRxMsg;
-    char[PICO_RX_TOPIC_LENGTH] RxTopic;
-    char[PICO_RX_MSG_LENGTH] RxMsg;
-    char[PICO_SMS_LENGTH] SmsMsg;
+    char RxTopic[PICO_RX_TOPIC_LENGTH];
+    char RxMsg[PICO_RX_MSG_LENGTH];
+    char SmsMsg[PICO_SMS_LENGTH];
 } PicoLibrary_t;
 
 /* Exported constants --------------------------------------------------------*/
