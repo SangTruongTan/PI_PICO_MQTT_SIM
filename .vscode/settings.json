@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "stdlib.h": "c",
-        "uart.h": "c",
-        "pico.h": "c",
-        "cstring": "c",
-        "typeinfo": "c"
-    }
-}

@@ -1,3 +1,0 @@
-C:/Users/sangt/OneDrive/Job/Upwork_SIM_MQTT/Repository/build/pioasm/CMakeFiles/pioasm.dir
-C:/Users/sangt/OneDrive/Job/Upwork_SIM_MQTT/Repository/build/pioasm/CMakeFiles/edit_cache.dir
-C:/Users/sangt/OneDrive/Job/Upwork_SIM_MQTT/Repository/build/pioasm/CMakeFiles/rebuild_cache.dir
