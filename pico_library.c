@@ -495,8 +495,8 @@ void sms_set_mode(uint8_t Mode) {
 bool sms_send(char *PhoneNumber, char *Text) {
     bool retval = false;
     char *Head = "AT+CMGS=";
-    char *Buffer = malloc(50);
-    sprintf(Buffer, "%s%s\r", Head, PhoneNumber);
+    char *Buffer = malloc(64);
+    sprintf(Buffer, "%s\"%s\"\r", Head, PhoneNumber);
     if (mqtt_support_send(Buffer, Text)) retval = true;
     free(Buffer);
     free(Buffer);
