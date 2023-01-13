@@ -73,6 +73,7 @@ int main() {
     // SMS example
     LOG("Testing SMS functionality\r\n");
     sms_set_mode(1);
+    sms_remove_messages();
     sms_send("YourPhoneNumber", "Hello, great\032");
     LOG("Go to receive message\r\n");
     char *Buffer = malloc(128);

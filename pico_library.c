@@ -520,7 +520,7 @@ bool sms_read() {
 bool sms_remove_messages() {
     char *Cmd = " AT+CMGD=,1\r";
     sim_send_at_command(mPico->uartId, Cmd);
-    LOG(Buffer);
+    LOG(Cmd);
     sleep_ms(1000);
     handle_buffer();
     sleep_ms(200);
