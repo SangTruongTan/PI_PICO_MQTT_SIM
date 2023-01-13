@@ -79,7 +79,7 @@ int main() {
     char *Buffer = malloc(128);
     while (1) {
         if (is_sms_readable()) {
-            sprintf(Buffer, "======>SMS;%s\r\n", mPicoLib.SmsMsg);
+            sprintf(Buffer, "======>SMS:%s\r\n", mPicoLib.SmsMsg);
             LOG(Buffer);
         }
         sleep_ms(500);

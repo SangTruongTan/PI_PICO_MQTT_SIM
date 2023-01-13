@@ -517,7 +517,7 @@ bool is_sms_readable() {
         retval = true;
     }
     mPico->is_sms_readable = false;
-    return true;
+    return retval;
 }
 
 bool sms_remove_messages() {
