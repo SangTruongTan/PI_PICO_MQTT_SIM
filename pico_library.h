@@ -220,6 +220,23 @@ bool mqtt_connect_server(uint8_t ClientIdx, char *Server,
                          uint16_t KeepAliveTime, uint8_t CleanSession);
 
 /**
+ * @brief MQTT Connect Server with authentication (User and Password)
+ * @param ClientIdx The client index. A numeric parameter that identifies a
+client. The range of permitted values is 0 to 1.
+ * @param Server The server address. For instance,
+ * "tcp://test.mosquitto.org:1883"
+ * @param KeepAliveTime Keep Alive Time parameter.
+ * @param CleanSession Clean Session parameter.
+ * @param User The user name specified in the private broker.
+ * @param Password The password of the user
+ * @retval bool True means connected succesfully and opposite for False.
+ */
+bool mqtt_connect_server_autheticate(uint8_t ClientIdx, char *Server,
+                                     uint16_t KeepAliveTime,
+                                     uint8_t CleanSession, char *User,
+                                     char *Password);
+
+/**
  * @brief MQTT Disconnect from Server
  * @param ClientIdx The client index. A numeric parameter that identifies a
 client. The range of permitted values is 0 to 1.
@@ -345,6 +362,12 @@ bool sms_send(char *PhoneNumber, char *Text);
  * @retval bool True means sms message available succesfully and opposite for False.
  */
 bool sms_read();
+
+/**
+ * @brief Remove all messages in the SIM's storage
+ * void
+*/
+bool sms_remove_messages();
 
 /* Support Functions */
 /**

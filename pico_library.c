@@ -319,6 +319,26 @@ bool mqtt_connect_server(uint8_t ClientIdx, char *Server,
         return false;
 }
 
+bool mqtt_connect_server_autheticate(uint8_t ClientIdx, char *Server,
+                                     uint16_t KeepAliveTime,
+                                     uint8_t CleanSession, char *User,
+                                     char *Password) {
+    char *Head = "AT+CMQTTCONNECT=";
+    char *Buffer = malloc(128);
+    sprintf(Buffer, "%s%u,\"%s\",%u,%u,\"%s\",\"%s\"\r", Head, ClientIdx, Server,
+            KeepAliveTime, CleanSession, User, Password);
+    sim_send_at_command(mPico->uartId, Buffer);
+    LOG(Buffer);
+    sleep_ms(2000);
+    free(Buffer);
+    mPico->ConnectionAvailable = false;
+    handle_buffer();
+    if (mPico->ConnectionAvailable)
+        return true;
+    else
+        return false;
+}
+
 bool mqtt_disconnect_server(uint8_t ClientIdx, uint8_t Timeout) {
     bool retval = false;
     char *Head = "AT+CMQTTDISC=";
@@ -466,6 +486,7 @@ void sms_set_mode(uint8_t Mode) {
     char *Buffer = malloc(16);
     sprintf(Buffer, "%s%u\r", Head, Mode);
     sim_send_at_command(mPico->uartId, Buffer);
+    LOG(Buffer);
     sleep_ms(200);
     handle_buffer();
     sleep_ms(200);
@@ -496,6 +517,15 @@ bool sms_read() {
     return true;
 }
 
+bool sms_remove_messages() {
+    char *Cmd = " AT+CMGD=,1\r";
+    sim_send_at_command(mPico->uartId, Cmd);
+    LOG(Buffer);
+    sleep_ms(1000);
+    handle_buffer();
+    sleep_ms(200);
+}
+
 void handle_buffer() {
     char *Buffer = malloc(128);
     reset_flags();
@@ -514,6 +544,7 @@ bool mqtt_support_send(char *Cmd, char *Message) {
     bool retval = false;
     handle_buffer();
     sim_send_at_command(mPico->uartId, Cmd);
+    LOG(Cmd);
     sleep_ms(100);
     handle_buffer();
     if (mPico->MorethanSymbol) {
