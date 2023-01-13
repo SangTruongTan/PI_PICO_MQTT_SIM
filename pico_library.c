@@ -112,6 +112,12 @@ bool picolib_process(char *Buffer) {
     } else if (strstr(Buffer, "+CMGL:")) {
         mPico->SmsDetected = true;
         retval = true;
+    } else if (strstr(Buffer, "+CMTI:")) {
+        char *Cmd = "AT+CMGL=\"REC UNREAD\"\r";
+        sim_send_at_command(mPico->uartId, Cmd);
+        LOG(Cmd);
+        mPico->SmsDetected = false;
+        retval = true;
     } else if (mPico->IsRxTopic) {
         if (PICO_RX_TOPIC_LENGTH - mPico->pRxTopic >= strlen(Buffer)) {
             strcpy(mPico->RxTopic + mPico->pRxTopic, Buffer);
@@ -319,10 +325,10 @@ bool mqtt_connect_server(uint8_t ClientIdx, char *Server,
         return false;
 }
 
-bool mqtt_connect_server_autheticate(uint8_t ClientIdx, char *Server,
-                                     uint16_t KeepAliveTime,
-                                     uint8_t CleanSession, char *User,
-                                     char *Password) {
+bool mqtt_connect_server_authenticate(uint8_t ClientIdx, char *Server,
+                                      uint16_t KeepAliveTime,
+                                      uint8_t CleanSession, char *User,
+                                      char *Password) {
     char *Head = "AT+CMQTTCONNECT=";
     char *Buffer = malloc(128);
     sprintf(Buffer, "%s%u,\"%s\",%u,%u,\"%s\",\"%s\"\r", Head, ClientIdx, Server,
@@ -499,16 +505,13 @@ bool sms_send(char *PhoneNumber, char *Text) {
     sprintf(Buffer, "%s\"%s\"\r", Head, PhoneNumber);
     if (mqtt_support_send(Buffer, Text)) retval = true;
     free(Buffer);
-    free(Buffer);
+    return retval;
 }
 
-bool sms_read() {
+bool is_sms_readable() {
     bool retval = false;
-    char *Cmd = "AT+CMGL=\"REC UNREAD\"\r";
     handle_buffer();
-    sim_forward_command(mPico->uartId, Cmd);
     sleep_ms(2000);
-    mPico->SmsDetected = false;
     handle_buffer();
     if (mPico->is_sms_readable) {
         retval = true;
@@ -545,13 +548,13 @@ bool mqtt_support_send(char *Cmd, char *Message) {
     handle_buffer();
     sim_send_at_command(mPico->uartId, Cmd);
     LOG(Cmd);
-    sleep_ms(100);
+    sleep_ms(500);
     handle_buffer();
     if (mPico->MorethanSymbol) {
         sim_send_at_command(mPico->uartId, Message);
         LOG(Message);
         LOG("\r\n");
-        sleep_ms(100);
+        sleep_ms(1000);
         handle_buffer();
         if (mPico->OkDetected == true)
             retval = true;

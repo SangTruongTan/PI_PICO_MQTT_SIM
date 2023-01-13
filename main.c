@@ -19,9 +19,9 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include <stdio.h>
-#include "pico/stdlib.h"
-#include "hardware/uart.h"
 
+#include "hardware/uart.h"
+#include "pico/stdlib.h"
 #include "pico_library.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -39,7 +39,7 @@
 #define DEBUG_RX_PIN 1
 #define DEBUG_BAUDRATE 115200
 
-//LOG Lines
+// LOG Lines
 #define LOG(X) uart_puts(DEBUG_UART_ID, X)
 
 /* Private define ------------------------------------------------------------*/
@@ -78,7 +78,7 @@ int main() {
     LOG("Go to receive message\r\n");
     char *Buffer = malloc(128);
     while (1) {
-        if (sms_read()) {
+        if (is_sms_readable()) {
             sprintf(Buffer, "======>SMS;%s\r\n", mPicoLib.SmsMsg);
             LOG(Buffer);
         }
@@ -93,7 +93,8 @@ int main() {
     if (mqtt_start()) {
         LOG("MQTT started successfully!\r\n");
         mqtt_acquire_client(0, "SangTruongTan");
-        if (mqtt_connect_server(0, "tcp://test.mosquitto.org:1883", 90, 1)) {
+        if (mqtt_connect_server_authenticate(0, "tcp://test.mosquitto.org:1883",
+                                             90, 1, "User", "Password")) {
             LOG("Connected to MQTT Server successfully!\r\n");
             // Do something
             if (mqtt_subscribe_topic(0, "ChangeYourTopic", 0)) {
@@ -104,7 +105,7 @@ int main() {
                 char *Buf = malloc(100);
                 mqtt_subscribe(0);
                 LOG("Going to receive loop\r\n");
-                //Receive Rx data
+                // Receive Rx data
                 while (1) {
                     if (mqtt_is_rx_readable()) {
                         sprintf(Buf, "Topic RX:%s\r\n", mPicoLib.RxTopic);
@@ -118,8 +119,8 @@ int main() {
             }
         }
     }
-    //Loop forever
-    while(1) {
+    // Loop forever
+    while (1) {
         // Using for debuging Module SIM
         at_command_bio_forward(uart0, uart1);
     }

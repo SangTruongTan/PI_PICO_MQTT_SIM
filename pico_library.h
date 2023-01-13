@@ -231,10 +231,10 @@ client. The range of permitted values is 0 to 1.
  * @param Password The password of the user
  * @retval bool True means connected succesfully and opposite for False.
  */
-bool mqtt_connect_server_autheticate(uint8_t ClientIdx, char *Server,
-                                     uint16_t KeepAliveTime,
-                                     uint8_t CleanSession, char *User,
-                                     char *Password);
+bool mqtt_connect_server_authenticate(uint8_t ClientIdx, char *Server,
+                                      uint16_t KeepAliveTime,
+                                      uint8_t CleanSession, char *User,
+                                      char *Password);
 
 /**
  * @brief MQTT Disconnect from Server
@@ -357,11 +357,10 @@ void sms_set_mode(uint8_t Mode);
 bool sms_send(char *PhoneNumber, char *Text);
 
 /**
- * @brief SMS Read unread message
- * @param Buffer The buffer of receiving message in case. Should be largely.
+ * @brief Whether available SMS Read unread message
  * @retval bool True means sms message available succesfully and opposite for False.
  */
-bool sms_read();
+bool is_sms_readable();
 
 /**
  * @brief Remove all messages in the SIM's storage
