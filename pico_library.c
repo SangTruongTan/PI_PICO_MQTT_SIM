@@ -532,6 +532,7 @@ bool sms_remove_messages() {
 void handle_buffer() {
     char *Buffer = malloc(128);
     reset_flags();
+    if (Buffer == NULL) return;
     while (Detect_Char(&mPico->RingHandler, '\n')) {
         Get_String_NonBlocking(&mPico->RingHandler, Buffer, '\n');
         picolib_process(Buffer);
