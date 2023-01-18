@@ -70,13 +70,56 @@ int main() {
     // Call pico library init
     picolib_init(&mPicoLib);
 
+    // Basic functionality
+    LOG("*** Test basic functionality\r\n ***");
+    char *Buffer = malloc(128);
+    LOG("Check is SIM Inserter\r\n");
+    if (sim_is_inserted()) {
+        LOG("Sim is inserted!!!\r\n");
+    } else {
+        LOG("### Please check your sim card again\r\n");
+        while(1);
+    }
+    LOG("Check signal strength\r\n");
+    int signal = sim_get_signal_strength();
+    sprintf(Buffer, "Signal Strength:%d\r\n", signal);
+    LOG(Buffer);
+    LOG("Get network Provider\r\n");
+    sim_get_network_provider();
+    LOG(mPicoLib.NetworkProvider);
+    LOG("Get banlance available\r\n");
+    sim_check_balance_available("*101*2#");
+    LOG(mPicoLib.BalanceAvailable);
+    LOG("Configure to LTE mode only instead on automatic\r\n");
+    if (sim_configure_network_mode(38)) {
+        sprintf(Buffer, "Configure Network successfully:%d\r\n",
+                mPicoLib.NetWorkMode);
+        LOG(Buffer);
+    } else {
+        LOG("Uncessfully to configure network mode\r\n");
+    }
+    LOG("Enable Inernet socket\r\n");
+    sim_at_netopen();
+    sleep_ms(1000);
+    if (sim_is_socket_available()) {
+        LOG("Socket is available ==> Try closing\r\n");
+        sim_at_netclose();
+        sleep_ms(1000);
+        if (sim_is_socket_available() == false) {
+            LOG("Successfully in closing socket\r\n");
+        } else {
+            LOG("Can not close the socket\r\n");
+        }
+    }  else {
+            LOG("Unsuccessfully in opening the socket\r\n");
+    }
+    while(1);
     // SMS example
     LOG("Testing SMS functionality\r\n");
     sms_set_mode(1);
     sms_remove_messages();
     sms_send("YourPhoneNumber", "Hello, great\032");
     LOG("Go to receive message\r\n");
-    char *Buffer = malloc(128);
     while (1) {
         if (is_sms_readable()) {
             sprintf(Buffer, "======>SMS:%s\r\n", mPicoLib.SmsMsg);

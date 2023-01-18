@@ -74,7 +74,7 @@ bool picolib_process(char *Buffer) {
             retval = true;
         }
     } else if (strstr(Buffer, "+CMQTTCONNECT:")) {
-        if (strstr(Buffer, ",0")) {
+        if (strstr(Buffer, ",0") || strlen(Buffer) > 25) {
             mPico->ConnectionAvailable = true;
             retval = true;
         }
@@ -112,11 +112,60 @@ bool picolib_process(char *Buffer) {
     } else if (strstr(Buffer, "+CMGL:")) {
         mPico->SmsDetected = true;
         retval = true;
-    } else if (strstr(Buffer, "+CMTI:")) {
-        char *Cmd = "AT+CMGL=\"REC UNREAD\"\r";
-        sim_send_at_command(mPico->uartId, Cmd);
-        LOG(Cmd);
-        mPico->SmsDetected = false;
+    } else if (strstr(Buffer, "+CSQ:") && strstr(Buffer, ",")) {
+        if (strtok(Buffer, ": ") != NULL) {
+            char *ptr = strtok(NULL, ",");
+            mPico->SignalStrength = atoi(ptr);
+        }
+        retval = true;
+    } else if (strstr(Buffer, "+CPIN:")) {
+        if (strstr(Buffer, "+CPIN: READY")) {
+            mPico->IsSimInserted = true;
+        } else {
+            mPico->IsSimInserted = false;
+        }
+        retval = true;
+    } else if (strstr(Buffer, "+CSPN:") && strstr(Buffer, ",")) {
+        if (strtok(Buffer, ": ") != NULL) {
+            char *ptr = strtok(NULL, ",");
+            if (ptr != NULL) {
+                strcpy(mPico->NetworkProvider, ptr);
+            }
+        }
+        retval = true;
+    } else if (strstr(Buffer, "+NETOPEN:")) {
+        if (strstr(Buffer, "0")) {
+            mPico->IsSocketAvailable = true;
+        } else {
+            mPico->IsSocketAvailable = false;
+        }
+        retval = true;
+    } else if (strstr(Buffer, "+NETCLOSE:")) {
+        mPico->IsSocketAvailable = false;
+        retval = true;
+    } else if (strstr(Buffer, "+CNMP: ")) {
+        char *ptr = strtok(Buffer, ": ");
+        if (ptr != NULL) {
+            mPico->NetWorkMode = atoi(ptr);
+        }
+        retval = true;
+    } else if (strstr(Buffer, "+CNMP: ")) {
+        char *ptr = strtok(Buffer, ": ");
+        if (ptr != NULL) {
+            mPico->NetWorkMode = atoi(ptr);
+        }
+        retval = true;
+    } else if (strstr(Buffer, "+CNMP: ")) {
+        char *ptr = strtok(Buffer, ": ");
+        if (ptr != NULL) {
+            mPico->NetWorkMode = atoi(ptr);
+        }
+        retval = true;
+    } else if (strstr(Buffer, "+CUSD:")) {
+        char *ptr = strtok(Buffer, ": ");
+        if (ptr != NULL) {
+            strcpy(mPico->BalanceAvailable, Buffer);
+        }
         retval = true;
     } else if (mPico->IsRxTopic) {
         if (PICO_RX_TOPIC_LENGTH - mPico->pRxTopic >= strlen(Buffer)) {
@@ -209,33 +258,86 @@ bool sim_receive_at_command(uart_inst_t *Uart, char *Buffer, char Delimiter) {
         return false;
 }
 
-void sim_at_netclose(uart_inst_t *Uart) {
+void sim_at_netclose() {
     char *Cmd = "AT+NETCLOSE\r";
-    char *Buffer = malloc(30);
-    sim_send_at_command(Uart, Buffer);
+    sim_send_at_command(mPico->uartId, Cmd);
     LOG(Cmd);
-    int i = 2000;
-    while (i > 0) {
-        sleep_ms(1);
-        handle_buffer();
-        i--;
-    }
-    free(Buffer);
+    sleep_ms(1000);
+    handle_buffer();
 }
 
-void sim_at_netopen(uart_inst_t *Uart) {
+void sim_at_netopen() {
     char *Cmd = "AT+NETOPEN\r";
-    char *Buffer = malloc(30);
-    sim_send_at_command(Uart, Buffer);
+    sim_send_at_command(mPico->uartId, Cmd);
     LOG(Cmd);
-    int i = 2000;
-    while (i > 0) {
-        sleep_ms(1);
-        handle_buffer();
-        i--;
-    }
-    sleep_ms(100);
+    sleep_ms(1000);
+    handle_buffer();
+}
+
+bool sim_is_socket_available(void) {
+    handle_buffer();
+    return mPico->IsSocketAvailable;
+}
+
+int sim_get_signal_strength(void) {
+    char *Cmd = "AT+CSQ=";
+    sim_send_at_command(mPico->uartId, Cmd);
+    LOG(Cmd);
+    sleep_ms(500);
+    handle_buffer();
+    return mPico->SignalStrength;
+}
+
+bool sim_is_inserted(void) {
+    char *Cmd = "AT+CPIN?\r";
+    sim_send_at_command(mPico->uartId, Cmd);
+    LOG(Cmd);
+    sleep_ms(500);
+    handle_buffer();
+    return mPico->IsSimInserted;
+}
+
+void sim_get_network_provider(void) {
+    char *Cmd = "AT+CSPN?\r";
+    sim_send_at_command(mPico->uartId, Cmd);
+    LOG(Cmd);
+    sleep_ms(500);
+    handle_buffer();
+}
+
+bool sim_configure_network_mode(int Mode) {
+    char *Head = "AT+CNMP=";
+    char *Cmd = "AT+CNMP?\r";
+    char *Buffer = malloc(32);
+    sprintf(Buffer, "%s%u\r", Head, Mode);
+    sim_send_at_command(mPico->uartId, Buffer);
+    LOG(Buffer);
+    LOG("Wait until 10s after configuring the network mode\r\n");
+    sleep_ms(10000);
     free(Buffer);
+    sim_send_at_command(mPico->uartId, Cmd);
+    LOG(Cmd);
+    mPico->NetWorkMode = -1;
+    handle_buffer();
+    sleep_ms(1000);
+    if (mPico->NetWorkMode == -1) return false;
+    else return true;
+}
+
+void sim_check_balance_available(char *Dial) {
+    char *Cmd1 = "AT+CUSD=1\r";
+    char *Head = "AT+CUSD=1,";
+    char *Buffer = malloc(64);
+    sim_send_at_command(mPico->uartId, Cmd1);
+    LOG(Cmd1);
+    sleep_ms(1000);
+    if (Buffer != NULL) {
+        sprintf(Buffer, "%s\"%s\"\r", Head, Dial);
+        sim_send_at_command(mPico->uartId, Buffer);
+        LOG(Buffer);
+        sleep_ms(2000);
+        handle_buffer();
+    }
 }
 
 bool mqtt_start() {
@@ -249,6 +351,11 @@ bool mqtt_start() {
         return true;
     else
         return false;
+}
+
+bool mqtt_is_service_available(void) {
+    handle_buffer();
+    return mPico->MqttStarted;
 }
 
 bool mqtt_stop() {
@@ -343,6 +450,15 @@ bool mqtt_connect_server_authenticate(uint8_t ClientIdx, char *Server,
         return true;
     else
         return false;
+}
+
+bool mqtt_is_connection_available(void) {
+    char *Cmd = "AT+CMQTTCONNECT?\r";
+    sim_send_at_command(mPico->uartId, Cmd);
+    LOG(Cmd);
+    sleep_ms(500);
+    handle_buffer();
+    return mPico->ConnectionAvailable;
 }
 
 bool mqtt_disconnect_server(uint8_t ClientIdx, uint8_t Timeout) {

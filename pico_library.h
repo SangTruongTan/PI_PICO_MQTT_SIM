@@ -41,6 +41,7 @@
 #define PICO_RX_TOPIC_LENGTH 32
 #define PICO_RX_MSG_LENGTH 64
 #define PICO_SMS_LENGTH 32
+#define PICO_BALANCE_LENGTH 64
 
 /* Exported types ------------------------------------------------------------*/
 typedef struct {
@@ -59,11 +60,17 @@ typedef struct {
     bool SmsDetected;
     bool is_sms_readable;
     bool PublicMsgSuc;
+    bool IsSimInserted;
+    bool IsSocketAvailable;
+    int NetWorkMode; // - 1 means reading not successfully
+    int SignalStrength;
     int pRxTopic;
     int pRxMsg;
     char RxTopic[PICO_RX_TOPIC_LENGTH];
     char RxMsg[PICO_RX_MSG_LENGTH];
     char SmsMsg[PICO_SMS_LENGTH];
+    char BalanceAvailable[PICO_BALANCE_LENGTH];
+    char NetworkProvider[32];
 } PicoLibrary_t;
 
 /* Exported constants --------------------------------------------------------*/
@@ -136,17 +143,47 @@ bool sim_receive_at_command(uart_inst_t *Uart, char *Buffer, char Delimiter);
 
 /**
  * @brief Send AT Netclose
- * @param Uart The pointer of uart instance.
  * @retval void
  */
-void sim_at_netclose(uart_inst_t *Uart);
+void sim_at_netclose();
 
 /**
  * @brief Send AT to Open Network
- * @param Uart The pointer of uart instance.
  * @retval void
  */
-void sim_at_netopen(uart_inst_t *Uart);
+void sim_at_netopen(void);
+
+/**
+ * @brief Is socket available
+ * @retval bool
+ */
+bool sim_is_socket_available(void);
+
+/**
+ * @brief Get signal strength
+ * @retval int The value that describe the signal strength.
+ */
+int sim_get_signal_strength(void);
+
+/**
+ * @brief Is sim inserted
+ * @retval bool
+ */
+bool sim_is_inserted(void);
+
+/**
+ * @brief Get sim network provider
+ * @retval void
+ */
+void sim_get_network_provider(void);
+
+/**
+ * @brief Configure Network Mode
+ * @param Mode The network mode refer in datasheet. 2 - Auto, 13 - GSM only, 14
+ * – WCDMA Only, 38 – LTE Only
+ * @retval bool
+ */
+bool sim_configure_network_mode(int Mode);
 
 /* MQTT Support functions */
 
@@ -155,6 +192,19 @@ void sim_at_netopen(uart_inst_t *Uart);
  * @retval bool True means started succesfully and opposite for False.
  */
 bool mqtt_start();
+
+/**
+ * @brief Is MQTT Service available
+ * @retval bool
+ */
+bool mqtt_is_service_available(void);
+
+/**
+ * @brief Check balance available of the SIM card
+ * @param Dial Your dial number to check. e.g, "*101#"
+ * @retval void
+ */
+void sim_check_balance_available(char *Dial);
 
 /**
  * @brief MQTT Stop
@@ -235,6 +285,12 @@ bool mqtt_connect_server_authenticate(uint8_t ClientIdx, char *Server,
                                       uint16_t KeepAliveTime,
                                       uint8_t CleanSession, char *User,
                                       char *Password);
+
+/**
+ * @brief Is connection available
+ * @retval bool
+ */
+bool mqtt_is_connection_available(void);
 
 /**
  * @brief MQTT Disconnect from Server
@@ -344,7 +400,7 @@ bool mqtt_is_rx_readable();
  * @brief Sms set mode
  * @param Mode 0 for PDU and 1 for text mode
  * @void
-*/
+ */
 void sms_set_mode(uint8_t Mode);
 
 /**
@@ -358,14 +414,15 @@ bool sms_send(char *PhoneNumber, char *Text);
 
 /**
  * @brief Whether available SMS Read unread message
- * @retval bool True means sms message available succesfully and opposite for False.
+ * @retval bool True means sms message available succesfully and opposite for
+ * False.
  */
 bool is_sms_readable();
 
 /**
  * @brief Remove all messages in the SIM's storage
  * void
-*/
+ */
 bool sms_remove_messages();
 
 /* Support Functions */
