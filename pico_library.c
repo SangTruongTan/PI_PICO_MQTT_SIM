@@ -143,22 +143,13 @@ bool picolib_process(char *Buffer) {
     } else if (strstr(Buffer, "+NETCLOSE:")) {
         mPico->IsSocketAvailable = false;
         retval = true;
-    } else if (strstr(Buffer, "+CNMP: ")) {
+    } else if (strstr(Buffer, "+CNMP:")) {
         char *ptr = strtok(Buffer, ": ");
         if (ptr != NULL) {
-            mPico->NetWorkMode = atoi(ptr);
-        }
-        retval = true;
-    } else if (strstr(Buffer, "+CNMP: ")) {
-        char *ptr = strtok(Buffer, ": ");
-        if (ptr != NULL) {
-            mPico->NetWorkMode = atoi(ptr);
-        }
-        retval = true;
-    } else if (strstr(Buffer, "+CNMP: ")) {
-        char *ptr = strtok(Buffer, ": ");
-        if (ptr != NULL) {
-            mPico->NetWorkMode = atoi(ptr);
+            ptr = strtok(NULL, "\r");
+            if (ptr != NULL) {
+                mPico->NetWorkMode = atoi(ptr);
+            }
         }
         retval = true;
     } else if (strstr(Buffer, "+CUSD:")) {
@@ -280,7 +271,7 @@ bool sim_is_socket_available(void) {
 }
 
 int sim_get_signal_strength(void) {
-    char *Cmd = "AT+CSQ=";
+    char *Cmd = "AT+CSQ\r";
     sim_send_at_command(mPico->uartId, Cmd);
     LOG(Cmd);
     sleep_ms(500);
@@ -318,8 +309,8 @@ bool sim_configure_network_mode(int Mode) {
     sim_send_at_command(mPico->uartId, Cmd);
     LOG(Cmd);
     mPico->NetWorkMode = -1;
-    handle_buffer();
     sleep_ms(1000);
+    handle_buffer();
     if (mPico->NetWorkMode == -1) return false;
     else return true;
 }
