@@ -70,6 +70,23 @@ int main() {
     // Call pico library init
     picolib_init(&mPicoLib);
 
+    // Test flashing user and password
+    LOG("*** Flasing the user and password ***\r\n");
+    pico_write_identifier(
+        "TruongTanSang12",
+        "AyushKhandelwal");  // Comment or remove after flashing
+    if (pico_read_identifier()) {
+        LOG("==>Read indentifier successfully\r\n");
+        LOG("<===User:");
+        LOG(mPicoLib.User);
+        LOG("===>\r\n");
+        LOG("<===Passwrod:");
+        LOG(mPicoLib.Password);
+        LOG("===>\r\n");
+    } else {
+        LOG("Unsuccessfully to read\r\n");
+    }
+    while(1);
     // Basic functionality
     LOG("*** Test basic functionality\r\n ***");
     char *Buffer = malloc(128);
@@ -78,7 +95,7 @@ int main() {
         LOG("Sim is inserted!!!\r\n");
     } else {
         LOG("### Please check your sim card again\r\n");
-        while(1);
+        while (1);
     }
     LOG("Check signal strength\r\n");
     int signal = sim_get_signal_strength();
@@ -110,10 +127,11 @@ int main() {
         } else {
             LOG("Can not close the socket\r\n");
         }
-    }  else {
-            LOG("Unsuccessfully in opening the socket\r\n");
+    } else {
+        LOG("Unsuccessfully in opening the socket\r\n");
     }
-    while(1);
+    while (1)
+        ;
     // SMS example
     LOG("Testing SMS functionality\r\n");
     sms_set_mode(1);

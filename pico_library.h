@@ -70,6 +70,8 @@ typedef struct {
     char RxMsg[PICO_RX_MSG_LENGTH];
     char SmsMsg[PICO_SMS_LENGTH];
     char BalanceAvailable[PICO_BALANCE_LENGTH];
+    char User[32];
+    char Password[64];
     char NetworkProvider[32];
 } PicoLibrary_t;
 
@@ -424,6 +426,22 @@ bool is_sms_readable();
  * void
  */
 bool sms_remove_messages();
+
+/* Support for writing and reading user and password in FLASH */
+/**
+ * @brief Write the Mqtt indentifier to the flash memory
+ * @param User The string of User.
+ * @param Password The string of Password.
+ * @retval void
+ */
+void pico_write_identifier(char *User, char *Password);
+
+/**
+ * @brief Read the Mqtt indentifier from the flash memory
+ * @return true Read the identifier successfully.
+ * @return false Unsuccessfully in reading.
+ */
+bool pico_read_identifier(void);
 
 /* Support Functions */
 /**
