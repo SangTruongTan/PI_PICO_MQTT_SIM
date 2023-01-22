@@ -109,8 +109,12 @@ int main() {
     sim_get_network_provider();
     LOG(mPicoLib.NetworkProvider);
     LOG("Get banlance available\r\n");
-    sim_check_balance_available("*101*2#");
-    LOG(mPicoLib.BalanceAvailable);
+    if (sim_check_balance_available("1299")) {
+        LOG("===> Get Balance successfully!!!\r\n");
+        LOG(mPicoLib.BalanceAvailable);
+    } else {
+        LOG("@@@ Unsucessfully get Balance\r\n");
+    }
     LOG("Configure to LTE mode only instead on automatic\r\n");
     if (sim_configure_network_mode(38)) {
         sprintf(Buffer, "Configure Network successfully:%d\r\n",

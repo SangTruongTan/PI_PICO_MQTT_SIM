@@ -41,7 +41,7 @@
 #define PICO_RX_TOPIC_LENGTH 32
 #define PICO_RX_MSG_LENGTH 64
 #define PICO_SMS_LENGTH 32
-#define PICO_BALANCE_LENGTH 64
+#define PICO_BALANCE_LENGTH 128
 
 /* Exported types ------------------------------------------------------------*/
 typedef struct {
@@ -202,9 +202,9 @@ bool mqtt_is_service_available(void);
 /**
  * @brief Check balance available of the SIM card
  * @param Dial Your dial number to check. e.g, "*101#"
- * @retval void
+ * @retval bool True means successfully checking and opposite for False.
  */
-void sim_check_balance_available(char *Dial);
+bool sim_check_balance_available(char *Dial);
 
 /**
  * @brief MQTT Stop

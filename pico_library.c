@@ -155,12 +155,6 @@ bool picolib_process(char *Buffer) {
             }
         }
         retval = true;
-    } else if (strstr(Buffer, "+CUSD:")) {
-        char *ptr = strtok(Buffer, ": ");
-        if (ptr != NULL) {
-            strcpy(mPico->BalanceAvailable, Buffer);
-        }
-        retval = true;
     } else if (mPico->IsRxTopic) {
         if (PICO_RX_TOPIC_LENGTH - mPico->pRxTopic >= strlen(Buffer)) {
             strcpy(mPico->RxTopic + mPico->pRxTopic, Buffer);
@@ -318,20 +312,24 @@ bool sim_configure_network_mode(int Mode) {
     else return true;
 }
 
-void sim_check_balance_available(char *Dial) {
-    char *Cmd1 = "AT+CUSD=1\r";
-    char *Head = "AT+CUSD=1,";
+bool sim_check_balance_available(char *Dial) {
+    bool retval = false;
     char *Buffer = malloc(64);
-    sim_send_at_command(mPico->uartId, Cmd1);
-    LOG(Cmd1);
-    sleep_ms(1000);
-    if (Buffer != NULL) {
-        sprintf(Buffer, "%s\"%s\"\r", Head, Dial);
-        sim_send_at_command(mPico->uartId, Buffer);
-        LOG(Buffer);
-        sleep_ms(2000);
-        handle_buffer();
+    // Check all un-read message
+    is_sms_readable();
+    // Remove storage
+    sms_remove_messages();
+    // Make a call
+    sprintf(Buffer, "ATD%s;\r", Dial);
+    sim_send_at_command(mPico->uartId, Buffer);
+    LOG(Buffer);
+    LOG("Waiting 5 seconds for sms response...\r\n");
+    sleep_ms(5000);
+    if (is_sms_readable()) {
+        strcpy(mPico->BalanceAvailable, mPico->SmsMsg);
+        retval = true;
     }
+    return retval;
 }
 
 bool mqtt_start() {
