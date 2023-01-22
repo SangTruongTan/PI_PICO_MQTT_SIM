@@ -21,6 +21,7 @@
 #include <stdio.h>
 
 #include "hardware/uart.h"
+#include "password.h"
 #include "pico/stdlib.h"
 #include "pico_library.h"
 
@@ -48,6 +49,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 PicoLibrary_t mPicoLib;
+password_t mPass;
 
 /* Private function prototypes -----------------------------------------------*/
 
@@ -73,20 +75,21 @@ int main() {
     // Test flashing user and password
     LOG("*** Flasing the user and password ***\r\n");
     pico_write_identifier(
-        "TruongTanSang12",
+        &mPass, "TruongTanSang12",
         "AyushKhandelwal");  // Comment or remove after flashing
     if (pico_read_identifier()) {
         LOG("==>Read indentifier successfully\r\n");
         LOG("<===User:");
-        LOG(mPicoLib.User);
+        LOG(mPass.User);
         LOG("===>\r\n");
         LOG("<===Passwrod:");
-        LOG(mPicoLib.Password);
+        LOG(mPass.Password);
         LOG("===>\r\n");
     } else {
         LOG("Unsuccessfully to read\r\n");
     }
-    while(1);
+    while (1)
+        ;
     // Basic functionality
     LOG("*** Test basic functionality\r\n ***");
     char *Buffer = malloc(128);
@@ -95,7 +98,8 @@ int main() {
         LOG("Sim is inserted!!!\r\n");
     } else {
         LOG("### Please check your sim card again\r\n");
-        while (1);
+        while (1)
+            ;
     }
     LOG("Check signal strength\r\n");
     int signal = sim_get_signal_strength();

@@ -21,7 +21,6 @@
 #include "pico_library.h"
 
 /* Private includes ----------------------------------------------------------*/
-#include "hardware/flash.h"
 #include <string.h>
 
 /* Private typedef -----------------------------------------------------------*/
@@ -638,38 +637,6 @@ bool sms_remove_messages() {
     sleep_ms(1000);
     handle_buffer();
     sleep_ms(200);
-}
-
-void pico_write_identifier(char *User, char *Password) {
-    char *Buffer = calloc(FLASH_PAGE_SIZE/sizeof(char), sizeof(char));
-    if (Buffer != NULL) {
-        sprintf(Buffer, "%s,%s\r\0", User, Password);
-        LOG("Data write to flash:");
-        LOG(Buffer);
-        LOG("\r\n");
-        LOG("===>Erase the flash sector\r\n");
-        flash_range_erase(FLASH_OFFSET, FLASH_SECTOR_SIZE);
-        LOG("===>Write data to flash page\r\n");
-        flash_range_program(FLASH_OFFSET, (uint8_t *)Buffer, FLASH_PAGE_SIZE);
-    }
-    free(Buffer);
-}
-
-bool pico_read_identifier(void) {
-    bool retval = false;
-    char *Buffer = calloc(FLASH_PAGE_SIZE/sizeof(char), sizeof(char));
-    if (Buffer != NULL) {
-        char *tptr = (char *)(XIP_BASE + FLASH_OFFSET);
-        strcpy(Buffer, tptr);
-        if (strstr(Buffer, ",") && strstr(Buffer, "\r")) {
-            char *ptr = strtok(Buffer, ",");
-            strcpy(mPico->User, ptr);
-            ptr = strtok(Buffer, "\r");
-            strcpy(mPico->Password, ptr);
-            retval = true;
-        }
-    }
-    return retval;
 }
 
 void handle_buffer() {
