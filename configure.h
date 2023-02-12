@@ -29,8 +29,28 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdarg.h>
+#include <string.h>
+#include <stdlib.h>
 
 /* Private defines -----------------------------------------------------------*/
+#define LOG_BUFFER 128
+// #define PICO_DEVICES 1      // Comment when you're testing on PC
+#define CONFIGURE_DEBUG 1  // Comment if there is no debuging enable
+#define DETAIL_LOGGING 1    // Comment if use undetails logging
+#ifdef LOG_BUFFER
+#ifdef DETAIL_LOGGING
+#define LOGUF(Format) LOG_DETAILS(__FILE__, __func__, __LINE__, Format)
+#define LOGF(Format, ...) LOG_DETAILS(__FILE__, __func__, __LINE__, Format, __VA_ARGS__)
+#else
+#define LOGUF(Format) LOG(Format)
+#define LOGF(Format, ...) LOG(Format, __VA_ARGS__)
+#endif
+#else
+#define LOGUF(Format)
+#define LOGF(Format, ...)
+#endif
+
 #define MQTT_TOPIC_LENGTH 32
 #define MQTT_USER_LENGTH 32
 #define MQTT_PASSWORD_LENGTH 32
@@ -62,6 +82,7 @@ typedef struct {
 /* Exported macro ------------------------------------------------------------*/
 
 /* Exported functions prototypes ---------------------------------------------*/
+/* API functions */
 /**
  * @brief For initializing the library
  * @param Configure The pointer of configure member variable
@@ -99,4 +120,16 @@ void add_master_number(void);
  */
 void process_configure_sms(void);
 
+/* Support functions */
+/**
+ * @brief Log debugging with file, function, line and format
+ * @param File String name of File
+ * @param Func String name of Function
+ * @param Line Integer type of Line
+ * @param format Formatted output
+ * @param ... Args
+ */
+void LOG_DETAILS(const char *File, const char *Func, int Line, const char *format, ...);
+
+void LOG(const char *format, ...);
 #endif /* __CONFIGURE_H_ */

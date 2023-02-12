@@ -51,6 +51,8 @@ int main(void) {
         if (strcmp(SourcePhone, "") == 0) {
             // Configure Source Number
             get_phone_message(ActualSource, Message);
+            LOGUF("In first condition:");
+            LOGF("In first condition:%d", 23);
         } else {
             // Don't need to confiure Source Number
             get_message(Message);
