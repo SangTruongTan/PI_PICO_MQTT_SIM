@@ -46,18 +46,25 @@ int main(void) {
     char *ActualSource = calloc(PHONE_LENGTH, sizeof(char));
     char *Message = calloc(BUFFER_SIZE, sizeof(char));
     int count = 1;
+    // Initialize
+    mConfigure.Sender = ActualSource;
+    configure_init(&mConfigure);
+
+    //Test case
+    strcpy(mConfigure.PhoneNumber[0], "1234");
     while (1) {
         printf("%d. ", count);
         if (strcmp(SourcePhone, "") == 0) {
             // Configure Source Number
             get_phone_message(ActualSource, Message);
-            LOGUF("In first condition:");
-            LOGF("In first condition:%d", 23);
         } else {
             // Don't need to confiure Source Number
             get_message(Message);
         }
+        if (strcmp(Message, "exit") == 0 || strcmp(SourcePhone, "exit") == 0)
+            return 0;
         printf("\n");
+        configure_main_process();
         count += 1;
     }
     return 0;

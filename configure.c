@@ -41,6 +41,22 @@ Configuration_t *pConfigure;
 /* Private user code ---------------------------------------------------------*/
 void configure_init(Configuration_t *Configure) { pConfigure = Configure; }
 
+void configure_main_process(void) {
+    if (is_receive_sms()) {
+        LOGUF("Receive new sms");
+        if (is_master_number()) {
+            process_configure_sms();
+        } else {
+            if (is_master_empty()) {
+                LOGUF("Master Phone is empty");
+                add_master_number();
+            } else {
+                LOGUF("It's not the master phone!!!");
+            }
+        }
+    }
+}
+
 bool is_receive_sms(void) {
     // Fix me: Detect when receive the new sms
     return true;
@@ -53,13 +69,17 @@ bool is_master_number(void) {
 }
 
 bool is_master_empty(void) {
-    if (pConfigure->PhoneNumber[0][0] = 0) return true;
+    if (pConfigure->PhoneNumber[0][0] == 0) return true;
     return false;
 }
 
-void add_master_number(void) {}
+void add_master_number(void) {
+    LOGUF("In Add master");
+}
 
-void process_configure_sms(void) {}
+void process_configure_sms(void) {
+    LOGUF("In Process configure");
+}
 
 void LOG_DETAILS(const char *File, const char *Func, int Line,
                  const char *format, ...) {

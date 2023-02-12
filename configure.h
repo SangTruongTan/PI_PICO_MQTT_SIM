@@ -90,6 +90,11 @@ typedef struct {
 void configure_init(Configuration_t *Configure);
 
 /**
+ * @brief Main process of the library
+ */
+void configure_main_process(void);
+
+/**
  * @brief Check whether there is a message received
  * @return true Just receive a sms
  * @return false There is no sms received
