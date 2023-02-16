@@ -31,6 +31,10 @@
 #define LOG_OUTPUT(X) printf(X);
 #endif
 
+#define CONFIGURE_MASTER_PHONE_SYNTAX_HEAD "master=\""
+#define CONFIGURE_MASTER_PHONE_SYNTAX "*Syntax: <master=\"xxxxxxxxxx\";PIN=\"yyyyyy\">"
+#define CONFIGURE_DEFAULT_PIN "PIN=\"082308\""
+
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
@@ -63,29 +67,59 @@ bool is_receive_sms(void) {
 }
 
 bool is_master_number(void) {
+    LOGF("Sender:%s", pConfigure->Sender);
+    LOGF("Master:%s", pConfigure->PhoneNumber[0]);
     if (strcmp(pConfigure->Sender, pConfigure->PhoneNumber[0]) == 0)
         return true;
     return false;
 }
 
 bool is_master_empty(void) {
-    if (pConfigure->PhoneNumber[0][0] == 0) return true;
+    LOGF("%s", pConfigure->PhoneNumber[0]);
+    if (pConfigure->PhoneNumber[0][0] == 0) {
+        return true;
+    }
     return false;
 }
 
 void add_master_number(void) {
+    bool is_valid = false;
     LOGUF("In Add master");
+    if (strstr(pConfigure->SmsBuffer, CONFIGURE_MASTER_PHONE_SYNTAX_HEAD)) {
+        LOGUF("Right head syntax");
+        if (strstr(pConfigure->SmsBuffer, CONFIGURE_DEFAULT_PIN)) {
+            LOGUF("Right PIN");
+            char *Buffer = calloc(SMS_MESSAGE_LENGTH, sizeof(char));
+            strcpy(Buffer, pConfigure->SmsBuffer);
+            strtok(Buffer, "\"");
+            char *tail = strtok(NULL, "\"");
+            if (strlen(tail) == PHONE_LENGTH) {
+                strcpy(pConfigure->PhoneNumber[0], tail);
+                LOGF("Add Master Phone successfull with:%s",
+                    pConfigure->PhoneNumber[0]);
+                sprintf(Buffer, "*Configure Master Phone successfully:\"%s\"",
+                        pConfigure->PhoneNumber[0]);
+                pConfigure->get_back(Buffer);
+                is_valid = true;
+            }
+            free(Buffer);
+        } else {
+            LOGUF("Wrong PIN");
+            pConfigure->get_back("*Wrong PIN!");
+            is_valid = true;
+        }
+    }
+    if (is_valid == false) {
+        pConfigure->get_back(CONFIGURE_MASTER_PHONE_SYNTAX);
+    }
 }
 
-void process_configure_sms(void) {
-    LOGUF("In Process configure");
-}
+void process_configure_sms(void) { LOGUF("In Process configure"); }
 
 void LOG_DETAILS(const char *File, const char *Func, int Line,
                  const char *format, ...) {
     char *Buffer = calloc(LOG_BUFFER, sizeof(char));
-    sprintf(Buffer, "%s:%d:%s() =>", File, Line,
-            Func);
+    sprintf(Buffer, "%s:%d:%s() =>", File, Line, Func);
     LOG_OUTPUT(Buffer);
     va_list vl;
     va_start(vl, format);

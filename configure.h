@@ -54,6 +54,8 @@
 #define MQTT_TOPIC_LENGTH 32
 #define MQTT_USER_LENGTH 32
 #define MQTT_PASSWORD_LENGTH 32
+#define SMS_MESSAGE_LENGTH 128
+#define PHONE_LENGTH 10
 
 /* Exported types ------------------------------------------------------------*/
 typedef enum {
@@ -67,14 +69,15 @@ typedef enum {
 
 typedef struct {
     configuration_state_t State;
-    char *SmsBuffer;    // The buffer of the sms message
-    char *Sender;       // The sender telephone
-    char PhoneNumber[10][10];
-    uint8_t ModbusPacket[5][8];
-    char MqttTopic[5][32];
-    char MqttUser[MQTT_USER_LENGTH];
-    char MqttPassword[MQTT_PASSWORD_LENGTH];
-    uint8_t FourTwentyConfi[4];
+    char Sender[PHONE_LENGTH + 1];       // The sender telephone
+    char SmsBuffer[SMS_MESSAGE_LENGTH + 1];    // The buffer of the sms message
+    char PhoneNumber[10][PHONE_LENGTH + 1];
+    uint8_t ModbusPacket[5][8 + 1];
+    char MqttTopic[5][32 + 1];
+    char MqttUser[MQTT_USER_LENGTH + 1];
+    char MqttPassword[MQTT_PASSWORD_LENGTH + 1];
+    uint8_t FourTwentyConfi[4 + 1];
+    void (*get_back) (const char *, ...);
 } Configuration_t;
 
 /* Exported constants --------------------------------------------------------*/

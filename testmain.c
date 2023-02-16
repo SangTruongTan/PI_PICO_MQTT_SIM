@@ -28,7 +28,6 @@
 
 /* Private define ------------------------------------------------------------*/
 #define BUFFER_SIZE 128
-#define PHONE_LENGTH 10
 
 /* Private macro -------------------------------------------------------------*/
 
@@ -43,15 +42,15 @@ void get_message(char *Message);
 /* Private user code ---------------------------------------------------------*/
 int main(void) {
     char *SourcePhone = "";
-    char *ActualSource = calloc(PHONE_LENGTH, sizeof(char));
-    char *Message = calloc(BUFFER_SIZE, sizeof(char));
     int count = 1;
     // Initialize
-    mConfigure.Sender = ActualSource;
+    char *ActualSource = mConfigure.Sender;
+    char *Message = mConfigure.SmsBuffer;
+    mConfigure.get_back = LOG;
     configure_init(&mConfigure);
 
     //Test case
-    strcpy(mConfigure.PhoneNumber[0], "1234");
+    // strcpy(mConfigure.PhoneNumber[0], "1234");
     while (1) {
         printf("%d. ", count);
         if (strcmp(SourcePhone, "") == 0) {
