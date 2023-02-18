@@ -26,22 +26,24 @@
 /* Includes ------------------------------------------------------------------*/
 
 /* Private includes ----------------------------------------------------------*/
-#include <stdio.h>
-#include <stdint.h>
-#include <stdbool.h>
 #include <stdarg.h>
-#include <string.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /* Private defines -----------------------------------------------------------*/
-#define LOG_BUFFER 128
+#define LOG_BUFFER 256
 // #define PICO_DEVICES 1      // Comment when you're testing on PC
-#define CONFIGURE_DEBUG 1  // Comment if there is no debuging enable
-#define DETAIL_LOGGING 1    // Comment if use undetails logging
-#ifdef LOG_BUFFER
+// #define CONFIGURE_DEBUG 1  // Comment if there is no debuging enable
+#define DETAIL_LOGGING 1   // Comment if use undetails logging
+
+#ifdef CONFIGURE_DEBUG
 #ifdef DETAIL_LOGGING
 #define LOGUF(Format) LOG_DETAILS(__FILE__, __func__, __LINE__, Format)
-#define LOGF(Format, ...) LOG_DETAILS(__FILE__, __func__, __LINE__, Format, __VA_ARGS__)
+#define LOGF(Format, ...) \
+    LOG_DETAILS(__FILE__, __func__, __LINE__, Format, __VA_ARGS__)
 #else
 #define LOGUF(Format) LOG(Format)
 #define LOGF(Format, ...) LOG(Format, __VA_ARGS__)
@@ -56,6 +58,7 @@
 #define MQTT_PASSWORD_LENGTH 32
 #define SMS_MESSAGE_LENGTH 128
 #define PHONE_LENGTH 10
+#define PHONE_LIST 10
 
 /* Exported types ------------------------------------------------------------*/
 typedef enum {
@@ -69,15 +72,15 @@ typedef enum {
 
 typedef struct {
     configuration_state_t State;
-    char Sender[PHONE_LENGTH + 1];       // The sender telephone
-    char SmsBuffer[SMS_MESSAGE_LENGTH + 1];    // The buffer of the sms message
-    char PhoneNumber[10][PHONE_LENGTH + 1];
+    char Sender[PHONE_LENGTH + 1];           // The sender telephone
+    char SmsBuffer[SMS_MESSAGE_LENGTH + 1];  // The buffer of the sms message
+    char PhoneNumber[PHONE_LIST][PHONE_LENGTH + 1];
     uint8_t ModbusPacket[5][8 + 1];
     char MqttTopic[5][32 + 1];
     char MqttUser[MQTT_USER_LENGTH + 1];
     char MqttPassword[MQTT_PASSWORD_LENGTH + 1];
     uint8_t FourTwentyConfi[4 + 1];
-    void (*get_back) (const char *, ...);
+    void (*get_back)(const char *, ...);
 } Configuration_t;
 
 /* Exported constants --------------------------------------------------------*/
@@ -128,6 +131,27 @@ void add_master_number(void);
  */
 void process_configure_sms(void);
 
+/**
+ * @brief List all the phone in the storage
+ */
+void list_phone(void);
+
+/**
+ * @brief Add the slave phone
+ * @return true Add phone successfully.
+ * @return false Can not add the phone number due to the wrong syntax or not
+ * enough storage.
+ */
+bool add_phone(void);
+
+/**
+ * @brief Delete the phone number in the list
+ * @return true Delete successfully.
+ * @return false Can not delete the phone number due to the wrong syntax or not
+ * enough storage.
+ */
+bool delete_phone(void);
+
 /* Support functions */
 /**
  * @brief Log debugging with file, function, line and format
@@ -137,7 +161,8 @@ void process_configure_sms(void);
  * @param format Formatted output
  * @param ... Args
  */
-void LOG_DETAILS(const char *File, const char *Func, int Line, const char *format, ...);
+void LOG_DETAILS(const char *File, const char *Func, int Line,
+                 const char *format, ...);
 
 void LOG(const char *format, ...);
 #endif /* __CONFIGURE_H_ */

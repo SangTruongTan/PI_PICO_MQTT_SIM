@@ -41,14 +41,17 @@ void get_phone(char *Phone);
 void get_message(char *Message);
 /* Private user code ---------------------------------------------------------*/
 int main(void) {
-    char *SourcePhone = "";
+    char *SourcePhone = "0123456789";
     int count = 1;
     // Initialize
     char *ActualSource = mConfigure.Sender;
     char *Message = mConfigure.SmsBuffer;
     mConfigure.get_back = LOG;
     configure_init(&mConfigure);
-
+    if (strcmp(SourcePhone, "") != 0) {
+        strcpy(mConfigure.Sender, SourcePhone);
+        strcpy(mConfigure.PhoneNumber[0], SourcePhone);
+    }
     //Test case
     // strcpy(mConfigure.PhoneNumber[0], "1234");
     while (1) {
@@ -82,12 +85,12 @@ void get_phone_message(char *Phone, char *Message) {
 void get_phone(char *Phone) {
     printf("Your Phone:");
     get_line_input(Phone);
-    printf("The Phone Number is:%s, Length=%d\n", Phone,
-           strlen(Phone));
+    // printf("The Phone Number is:%s, Length=%ld\n", Phone,
+    //        strlen(Phone));
 }
 
 void get_message(char *Message) {
     printf("Your message:");
     get_line_input(Message);
-    printf("The message is:%s, Length=%d\n", Message, strlen(Message));
+    // printf("The message is:%s, Length=%ld\n", Message, strlen(Message));
 }
