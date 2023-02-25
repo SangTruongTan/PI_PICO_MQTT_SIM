@@ -37,13 +37,27 @@
 #define CONFIGURE_MASTER_PHONE_SYNTAX \
     "*Syntax: <master=\"xxxxxxxxxx\";PIN=\"yyyyyy\">"
 #define CONFIGURE_DEFAULT_PIN "PIN=\"082308\""
-#define CONFIGURE_LIST                                        \
-    "1. Add phone number:<addphone=\"xxxxxxxxxx\";pos=y>\r\n" \
-    "2. Delete phone:<deletephone=y>\r\n"                     \
-    "3. List phone:<listphone=?>\r\n"
+#define CONFIGURE_LIST                                               \
+    "1. Add phone number:<addphone=\"xxxxxxxxxx\";pos=y>\r\n"        \
+    "2. Delete phone:<deletephone=y>\r\n"                            \
+    "3. List phone:<listphone=?>\r\n"                                \
+    "4. Add modbus master "                                          \
+    "package:<addmodbus=\"1122334455667788\";pos=y>\r\n"             \
+    "5. MQTT Topic:<mqtttopic=\"Your Topic\";pos=y>\r\n"             \
+    "6. MQTT Auth:<mqttuser=\"User\";mqttpassword=\"Password\">\r\n" \
+    "7. 4 - 20 mA Analog Sensor:<4-20sensor=xyz>\r\n"
+
 #define CONFIGURE_ADD_PHONE_SYNTAX \
     "Check syntax again:<addphone=\"xxxxxxxxxx\";pos=y>"
 #define CONFIGURE_DELETE_PHONE_SYNTAX "Check syntax again:<deltephone=y>"
+#define CONFIGURE_ADD_MODBUS_SYNTAX \
+    "Check syntax again:<addmodbus=\"1122334455667788\";pos=y>"
+#define CONFIGURE_MQTT_TOPIC_SYNTAX \
+    "Check syntax again:<mqtttopic=\"Your Topic\";pos=y>"
+#define CONFIGURE_MQTT_AUTH_SYNTAX \
+    "Check syntax again:<mqttuser=\"User\";mqttpassword=\"Password\">"
+#define CONFIGURE_4_20_SENSOR_SYNTAX \
+    "Check syntax again:<4-20sensor=xyz>"
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
@@ -137,12 +151,29 @@ void process_configure_sms(void) {
         if (delete_phone() == false) {
             pConfigure->get_back(CONFIGURE_DELETE_PHONE_SYNTAX);
         }
+    } else if (strstr(pConfigure->SmsBuffer, "addmodbus=") != NULL) {
+        if (add_modbus() == false) {
+            pConfigure->get_back(CONFIGURE_ADD_MODBUS_SYNTAX);
+        }
+    } else if (strstr(pConfigure->SmsBuffer, "mqtttopic=") != NULL) {
+        if (add_mqtt_topic() == false) {
+            pConfigure->get_back(CONFIGURE_MQTT_TOPIC_SYNTAX);
+        }
+    } else if (strstr(pConfigure->SmsBuffer, "mqttuser=") != NULL) {
+        if (add_user_password() == false) {
+            pConfigure->get_back(CONFIGURE_MQTT_AUTH_SYNTAX);
+        }
+    } else if (strstr(pConfigure->SmsBuffer, "4-20sensor=") != NULL) {
+        if (configure_4_20_sensor() == false) {
+            pConfigure->get_back(CONFIGURE_4_20_SENSOR_SYNTAX);
+        }
     } else {
         pConfigure->get_back(CONFIGURE_LIST);
     }
 }
 
 void list_phone(void) {
+    LOGUF("In list phone");
     char *Buffer = calloc(LOG_BUFFER, sizeof(char));
     char *BufferLine = calloc(32, sizeof(char));
     if (Buffer != NULL && BufferLine != NULL) {
@@ -160,6 +191,7 @@ void list_phone(void) {
 }
 
 bool add_phone(void) {
+    LOGUF("In add phone");
     bool retval = false;
     char *Phone = calloc(PHONE_LENGTH + 1, sizeof(char));
     char *Buffer = calloc(LOG_BUFFER, sizeof(char));
@@ -204,6 +236,7 @@ bool add_phone(void) {
 }
 
 bool delete_phone(void) {
+    LOGUF("Add delete phone");
     bool retval = false;
     char *cPos = strchr(pConfigure->SmsBuffer, '=');
     int iPos = cPos - pConfigure->SmsBuffer + 1;
@@ -224,6 +257,141 @@ bool delete_phone(void) {
         retval = false;
     }
     free(Buffer);
+    return retval;
+}
+
+bool add_modbus(void) {
+    LOGUF("In add modbus");
+    bool retval = false;
+    substr_t text;
+    substr_t text2;
+    text = substr(pConfigure->SmsBuffer, "=\"", "\"");
+    if (text.isAvailable == true) {
+        if (strlen(text.Target) != MODBUS_SIZE_PACKAGE * 2) {
+            LOGUF("Modbus package length is not expected");
+        } else {
+            text2 = substr(pConfigure->SmsBuffer, "pos=", "\032");  // EOF
+            if (text2.isAvailable == true) {
+                int pos = atoi(text2.Target);
+                if (pos >= 0 && pos <= MODBUS_PACKAGE - 1) {  // Restriction
+                    hexa_string_to_bytes(text.Target,
+                                         pConfigure->ModbusPacket[pos]);
+                    char *Buffer = calloc(32, sizeof(char));
+                    char *Buffer1 = malloc(LOG_BUFFER);
+                    if (Buffer == NULL || Buffer1 == NULL) {
+                        LOGUF("!!!Not enough Heap memory!!!");
+                    } else {
+                        char Hex[3];
+                        for (int i = 0; i < MODBUS_SIZE_PACKAGE; i++) {
+                            sprintf(Hex, "%X",
+                                    pConfigure->ModbusPacket[pos][i]);
+                            strcat(Buffer, Hex);
+                        }
+                        sprintf(Buffer1,
+                                "*Add Modbus package successfully:[pos=%d]0x%s",
+                                pos, Buffer);
+                        LOGUF(Buffer1);
+                        pConfigure->get_back(Buffer1);
+                        retval = true;
+                    }
+                    free(Buffer);
+                    free(Buffer1);
+                }
+            }
+        }
+    }
+    free(text.Target);
+    free(text2.Target);
+    return retval;
+}
+
+bool add_mqtt_topic(void) {
+    LOGUF("In add MQTT Topic");
+    bool retval = false;
+    substr_t text;
+    substr_t text2;
+    text = substr(pConfigure->SmsBuffer, "=\"", "\"");
+    if (text.isAvailable == true) {
+        if (strlen(text.Target) > MQTT_TOPIC_LENGTH) {
+            LOGUF("Topic length is longer than expected");
+        } else {
+            text2 = substr(pConfigure->SmsBuffer, "pos=", "\032");  // EOF
+            if (text2.isAvailable == true) {
+                int pos = atoi(text2.Target);
+                if (pos >= 0 && pos <= MQTT_SIZE_TOPIC - 1) {  // Restriction
+                    strcpy(pConfigure->MqttTopic[pos], text.Target);
+                    char *Buffer = malloc(LOG_BUFFER);
+                    if (Buffer == NULL) {
+                        LOGUF("!!!Not enough Heap memory!!!");
+                    } else {
+                        sprintf(Buffer,
+                                "*Add MQTT Topic successfully:[pos=%d]%s", pos,
+                                pConfigure->MqttTopic[pos]);
+                        LOGUF(Buffer);
+                        pConfigure->get_back(Buffer);
+                        retval = true;
+                    }
+                    free(Buffer);
+                }
+            }
+        }
+    }
+    free(text.Target);
+    free(text2.Target);
+    return retval;
+}
+
+bool add_user_password(void) {
+    LOGUF("In add MQTT User and Password");
+    bool retval = false;
+    substr_t text;
+    substr_t text2;
+    text = substr(pConfigure->SmsBuffer, "mqttuser=\"", "\"");
+    text2 = substr(pConfigure->SmsBuffer, "mqttpassword=\"", "\"");
+    if (text.isAvailable && text2.isAvailable) {
+        if (strlen(text.Target) > MQTT_USER_LENGTH ||
+            strlen(text2.Target) > MQTT_PASSWORD_LENGTH) {
+            LOGUF("User name or password length is longer than expected");
+        } else {
+            strcpy(pConfigure->MqttUser, text.Target);
+            strcpy(pConfigure->MqttPassword, text2.Target);
+            char *Buffer = malloc(LOG_BUFFER);
+            if (Buffer == NULL) {
+                LOGUF("!!!Not enough Heap memory!!!");
+            } else {
+                sprintf(Buffer,
+                        "*Add User and Password successfully:user=\"%s\" & "
+                        "password=\"%s\"",
+                        pConfigure->MqttUser, pConfigure->MqttPassword);
+                LOGUF(Buffer);
+                pConfigure->get_back(Buffer);
+                free(Buffer);
+                retval = true;
+            }
+        }
+    }
+    free(text.Target);
+    free(text2.Target);
+    return retval;
+}
+
+bool configure_4_20_sensor(void) {
+    LOGUF("In Configure 4-20 function");
+    bool retval = false;
+    substr_t Text;
+    Text = substr(pConfigure->SmsBuffer, "4-20sensor=", "\032"); //EOF
+    if (Text.isAvailable) {
+        int value = atoi(Text.Target);
+        if (value >= 0 && value <= 100) {
+            pConfigure->FourTwentySensor = value;
+            LOGF("*Configure 4-20mA Sensor Successfully:%d", pConfigure->FourTwentySensor);
+            pConfigure->get_back("*Configure 4-20mA Sensor Successfully");
+            retval = true;
+        } else {
+            LOGUF("Configure value out of range");
+        }
+    }
+    free(Text.Target);
     return retval;
 }
 
@@ -248,4 +416,37 @@ void LOG(const char *format, ...) {
     LOG_OUTPUT("%s\r\n", Buffer);
     va_end(vl);
     free(Buffer);
+}
+
+substr_t substr(char *Text, const char *HeadDelim, const char *TailDelim) {
+    substr_t retval;
+    retval.isAvailable = false;
+    char *target = NULL;
+    char *start, *end;
+    if (start = strstr(Text, HeadDelim)) {
+        start += strlen(HeadDelim);
+        end = (*TailDelim == '\032') ? (start + strlen(Text))
+                                     : strstr(start, TailDelim);
+        if (end) {
+            target = (char *)malloc(end - start + 1);
+            if (target == NULL) {
+                LOGUF("!!!Not enough Heap memory!!!");
+                return retval;
+            }
+            memcpy(target, start, end - start);
+            target[end - start] = '\0';
+            retval.isAvailable = true;
+            retval.Target = target;
+        }
+    }
+    return retval;
+}
+
+bool hexa_string_to_bytes(char *Text, unsigned char *Target) {
+    size_t length = strlen(Text);
+    if (length % 2 != 0) return false;
+    for (size_t i = 0, j = 0; i < (length / 2); i++, j += 2) {
+        Target[i] = (Text[j] % 32 + 9) % 25 * 16 + (Text[j + 1] % 32 + 9) % 25;
+    }
+    return true;
 }

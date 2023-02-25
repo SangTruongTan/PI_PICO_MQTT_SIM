@@ -34,10 +34,10 @@
 #include <string.h>
 
 /* Private defines -----------------------------------------------------------*/
-#define LOG_BUFFER 256
+#define LOG_BUFFER 320
 // #define PICO_DEVICES 1      // Comment when you're testing on PC
-// #define CONFIGURE_DEBUG 1  // Comment if there is no debuging enable
-#define DETAIL_LOGGING 1   // Comment if use undetails logging
+#define CONFIGURE_DEBUG 1  // Comment if there is no debuging enable
+#define DETAIL_LOGGING 1  // Comment if use undetails logging
 
 #ifdef CONFIGURE_DEBUG
 #ifdef DETAIL_LOGGING
@@ -59,8 +59,16 @@
 #define SMS_MESSAGE_LENGTH 128
 #define PHONE_LENGTH 10
 #define PHONE_LIST 10
+#define MODBUS_PACKAGE 5
+#define MODBUS_SIZE_PACKAGE 8
+#define MQTT_SIZE_TOPIC 5
 
 /* Exported types ------------------------------------------------------------*/
+typedef struct {
+    bool isAvailable;
+    char *Target;
+} substr_t;
+
 typedef enum {
     UNINITIALIZE_STATE = 0,
     READY_STATE = 1,
@@ -75,11 +83,11 @@ typedef struct {
     char Sender[PHONE_LENGTH + 1];           // The sender telephone
     char SmsBuffer[SMS_MESSAGE_LENGTH + 1];  // The buffer of the sms message
     char PhoneNumber[PHONE_LIST][PHONE_LENGTH + 1];
-    uint8_t ModbusPacket[5][8 + 1];
-    char MqttTopic[5][32 + 1];
+    unsigned char ModbusPacket[MODBUS_PACKAGE][MODBUS_SIZE_PACKAGE];
+    char MqttTopic[MQTT_SIZE_TOPIC][MQTT_TOPIC_LENGTH + 1];
     char MqttUser[MQTT_USER_LENGTH + 1];
     char MqttPassword[MQTT_PASSWORD_LENGTH + 1];
-    uint8_t FourTwentyConfi[4 + 1];
+    int FourTwentySensor;
     void (*get_back)(const char *, ...);
 } Configuration_t;
 
@@ -152,6 +160,37 @@ bool add_phone(void);
  */
 bool delete_phone(void);
 
+/**
+ * @brief Add mobus master package
+ * @return true Add successfully
+ * @return false Can not add the package due to the wrong syntax or not
+ * enough storage.
+ */
+bool add_modbus(void);
+
+/**
+ * @brief Add mqtt topic
+ * @return true Add successfully
+ * @return false Can not add the package due to the wrong syntax or not
+ * enough storage.
+ */
+bool add_mqtt_topic(void);
+
+/**
+ * @brief Configure 4-20 mA Analog Sensor
+ * @return true Configure successfully
+ * @return false Can not add the package due to the wrong syntax or not
+ * enough storage.
+ */
+bool configure_4_20_sensor(void);
+
+/**
+ * @brief Add MQTT Authentication User and Password
+ * @return true Add successfully
+ * @return false Can not add the package due to the wrong syntax or not
+ */
+bool add_user_password(void);
+
 /* Support functions */
 /**
  * @brief Log debugging with file, function, line and format
@@ -165,4 +204,22 @@ void LOG_DETAILS(const char *File, const char *Func, int Line,
                  const char *format, ...);
 
 void LOG(const char *format, ...);
+
+/**
+ * @brief Get subsequence string between two delimeter
+ * @param Text Buffer of the original string
+ * @param HeadDelim Head Delimeter
+ * @param TailDelim Tail Delimeter
+ * @return substr_t Return Substr_t struct
+ */
+substr_t substr(char *Text, const char *HeadDelim, const char *TailDelim);
+
+/**
+ * @brief Convert String hexadecimal format to byte array
+ * @param Text Source buffer
+ * @param Target Target buffer
+ * @return true When convert successfully
+ * @return false When convert unsuccessfully
+ */
+bool hexa_string_to_bytes(char *Text, unsigned char *Target);
 #endif /* __CONFIGURE_H_ */
