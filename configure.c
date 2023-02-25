@@ -56,8 +56,7 @@
     "Check syntax again:<mqtttopic=\"Your Topic\";pos=y>"
 #define CONFIGURE_MQTT_AUTH_SYNTAX \
     "Check syntax again:<mqttuser=\"User\";mqttpassword=\"Password\">"
-#define CONFIGURE_4_20_SENSOR_SYNTAX \
-    "Check syntax again:<4-20sensor=xyz>"
+#define CONFIGURE_4_20_SENSOR_SYNTAX "Check syntax again:<4-20sensor=xyz>"
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
@@ -379,12 +378,13 @@ bool configure_4_20_sensor(void) {
     LOGUF("In Configure 4-20 function");
     bool retval = false;
     substr_t Text;
-    Text = substr(pConfigure->SmsBuffer, "4-20sensor=", "\032"); //EOF
+    Text = substr(pConfigure->SmsBuffer, "4-20sensor=", "\032");  // EOF
     if (Text.isAvailable) {
         int value = atoi(Text.Target);
         if (value >= 0 && value <= 100) {
             pConfigure->FourTwentySensor = value;
-            LOGF("*Configure 4-20mA Sensor Successfully:%d", pConfigure->FourTwentySensor);
+            LOGF("*Configure 4-20mA Sensor Successfully:%d",
+                 pConfigure->FourTwentySensor);
             pConfigure->get_back("*Configure 4-20mA Sensor Successfully");
             retval = true;
         } else {
@@ -392,6 +392,34 @@ bool configure_4_20_sensor(void) {
         }
     }
     free(Text.Target);
+    return retval;
+}
+
+bool alert_status(float Value, float UpperThresold, float LowerThreshold) {
+    LOGUF("In Alert Status");
+    bool retval = false;
+    if (Value < LowerThreshold || Value > UpperThresold) {
+        char *Buffer = malloc(LOG_BUFFER);
+        if (Buffer == NULL) {
+            LOGUF("Not enough Heap memory");
+        } else {
+            sprintf(Buffer,
+                    "Alert Alert: Over Threshold Analog Sensor->Value:%f",
+                    Value);
+            for (int i = 1; i < PHONE_LIST; i++) {
+                if (pConfigure->PhoneNumber[i][0] !=
+                    '\0') {  // TODO: Verify by Regex
+                    LOGF(Buffer, "\"%s\"==>%s", Buffer,
+                         pConfigure->PhoneNumber[i]);
+                    pConfigure->send_sms(pConfigure->PhoneNumber[i], Buffer);
+                    retval = true;
+                }
+            }
+            free(Buffer);
+        }
+    } else {
+        LOGUF("Sensor in stable zone");
+    }
     return retval;
 }
 

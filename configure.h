@@ -89,6 +89,7 @@ typedef struct {
     char MqttPassword[MQTT_PASSWORD_LENGTH + 1];
     int FourTwentySensor;
     void (*get_back)(const char *, ...);
+    void (*send_sms)(const char *, const char *, ...);
 } Configuration_t;
 
 /* Exported constants --------------------------------------------------------*/
@@ -191,6 +192,9 @@ bool configure_4_20_sensor(void);
  */
 bool add_user_password(void);
 
+/* Alert */
+bool alert_status(float Value, float UpperThresold, float LowerThreshold);
+
 /* Support functions */
 /**
  * @brief Log debugging with file, function, line and format
@@ -222,4 +226,5 @@ substr_t substr(char *Text, const char *HeadDelim, const char *TailDelim);
  * @return false When convert unsuccessfully
  */
 bool hexa_string_to_bytes(char *Text, unsigned char *Target);
+
 #endif /* __CONFIGURE_H_ */

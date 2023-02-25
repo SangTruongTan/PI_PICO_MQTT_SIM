@@ -39,6 +39,7 @@ void get_line_input(char *Buffer);
 void get_phone_message(char *Phone, char *Message);
 void get_phone(char *Phone);
 void get_message(char *Message);
+void send_sms(const char *Phone, const char *Text, ...);
 /* Private user code ---------------------------------------------------------*/
 int main(void) {
     char *SourcePhone = "0123456789";
@@ -47,6 +48,7 @@ int main(void) {
     char *ActualSource = mConfigure.Sender;
     char *Message = mConfigure.SmsBuffer;
     mConfigure.get_back = LOG;
+    mConfigure.send_sms = send_sms;
     configure_init(&mConfigure);
     if (strcmp(SourcePhone, "") != 0) {
         strcpy(mConfigure.Sender, SourcePhone);
@@ -66,7 +68,15 @@ int main(void) {
         if (strcmp(Message, "exit") == 0 || strcmp(SourcePhone, "exit") == 0)
             return 0;
         printf("\n");
-        configure_main_process();
+        if (strstr(Message, "value=") != NULL) {
+            substr_t text = substr(Message, "value=", "\032");
+            float val = atof(text.Target);
+            printf("Value:%f\r\n", val);
+            alert_status(val, 30.1, 60.2);
+            free(text.Target);
+        } else {
+            configure_main_process();
+        }
         count += 1;
     }
     return 0;
@@ -93,4 +103,11 @@ void get_message(char *Message) {
     printf("Your message:");
     get_line_input(Message);
     // printf("The message is:%s, Length=%ld\n", Message, strlen(Message));
+}
+
+void send_sms(const char *Phone, const char *Text, ...) {
+    char *Buffer = calloc(LOG_BUFFER, sizeof(char));
+    sprintf(Buffer, "\"%s\"==>%s", Text, Phone);
+    LOG(Buffer);
+    free(Buffer);
 }
