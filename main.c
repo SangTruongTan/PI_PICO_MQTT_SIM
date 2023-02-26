@@ -53,6 +53,7 @@ PicoLibrary_t mPicoLib;
 password_t mPass;
 Configuration_t mConfig;
 Identifier_t mIden;
+Identifier_t *pIden;
 
 /* Private function prototypes -----------------------------------------------*/
 
@@ -101,21 +102,14 @@ int main() {
         sleep_ms(500);
     }
     // Test flashing user and password
-    LOG("*** Flasing the user and password ***\r\n");
-    pico_write_identifier(
-        &mPass, "TruongTanSang12",
-        "AyushKhandelwal");  // Comment or remove after flashing
-    if (pico_read_identifier()) {
-        LOG("==>Read indentifier successfully\r\n");
-        LOG("<===User:");
-        LOG(mPass.User);
-        LOG("===>\r\n");
-        LOG("<===Passwrod:");
-        LOG(mPass.Password);
-        LOG("===>\r\n");
-    } else {
-        LOG("Unsuccessfully to read\r\n");
-    }
+    LOG("Write data\r\n");
+    mIden.Index = 0x12;
+    pico_write_data(&mIden, sizeof(Identifier_t));
+    LOG("Read data\r\n");
+    pIden = pico_read_data();
+    LOG("Idex data:");
+    sprintf(Buffer, "%d\r\n", pIden->Index);
+    LOG(Buffer);
     while (1)
         ;
     // Basic functionality

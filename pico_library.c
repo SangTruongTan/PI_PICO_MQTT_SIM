@@ -617,7 +617,11 @@ bool sms_send(char *PhoneNumber, char *Text) {
     bool retval = false;
     char *Head = "AT+CMGS=";
     char *Buffer = malloc(64);
-    sprintf(Buffer, "%s\"%s\"\r", Head, PhoneNumber);
+    if (PhoneNumber[0] == '+') {
+        sprintf(Buffer, "%s\"%s\"\r", Head, PhoneNumber);
+    } else {
+        sprintf(Buffer, "%s\"+%s\"\r", Head, PhoneNumber);
+    }
     if (mqtt_support_send(Buffer, Text)) retval = true;
     free(Buffer);
     return retval;

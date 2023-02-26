@@ -21,7 +21,9 @@
 #include "password.h"
 
 /* Private includes ----------------------------------------------------------*/
+#include <math.h>
 #include <string.h>
+
 #include "hardware/flash.h"
 #include "hardware/uart.h"
 /* Private typedef -----------------------------------------------------------*/
@@ -33,7 +35,7 @@
 #define LOG(X)
 #endif
 
-#define FLASH_OFFSET (PICO_FLASH_SIZE_BYTES - FLASH_SECTOR_SIZE)
+#define FLASH_OFFSET (PICO_FLASH_SIZE_BYTES - 2 * FLASH_SECTOR_SIZE)
 
 /* Private macro -------------------------------------------------------------*/
 
@@ -45,7 +47,7 @@ password_t *pPass;
 /* Private user code ---------------------------------------------------------*/
 void pico_write_identifier(password_t *Identifier, char *User, char *Password) {
     pPass = Identifier;
-    char *Buffer = calloc(FLASH_PAGE_SIZE/sizeof(char), sizeof(char));
+    char *Buffer = calloc(FLASH_PAGE_SIZE / sizeof(char), sizeof(char));
     if (Buffer != NULL) {
         sprintf(Buffer, "%s,%s\r\0", User, Password);
         LOG("Data write to flash:");
@@ -61,7 +63,7 @@ void pico_write_identifier(password_t *Identifier, char *User, char *Password) {
 
 bool pico_read_identifier(void) {
     bool retval = false;
-    char *Buffer = calloc(FLASH_PAGE_SIZE/sizeof(char), sizeof(char));
+    char *Buffer = calloc(FLASH_PAGE_SIZE / sizeof(char), sizeof(char));
     if (Buffer != NULL) {
         char *tptr = (char *)(XIP_BASE + FLASH_OFFSET);
         strcpy(Buffer, tptr);
@@ -74,4 +76,31 @@ bool pico_read_identifier(void) {
         }
     }
     return retval;
+}
+
+void pico_write_data(void *StructData, uint16_t Size) {
+    LOG("Remove data with number of sector:");
+    int NumberOfSectors = ceil((float)Size / FLASH_SECTOR_SIZE);
+    LOG(NumberOfSectors);
+    LOG("\r\n");
+    for (int i = 0; i < NumberOfSectors; i++) {
+        LOG("===>Erase the flash sector\r\n");
+        flash_range_erase(FLASH_OFFSET, FLASH_SECTOR_SIZE);
+        LOG("===>Write data to flash page\r\n");
+    }
+    int NumberOfPages = ceil((float)Size / FLASH_PAGE_SIZE);
+    LOG("Number of Pages to write:");
+    LOG(NumberOfPages);
+    LOG("\r\n");
+    for (int i = 0; i < NumberOfPages; i++) {
+        LOG("===>Write data to flash page\r\n");
+        flash_range_program(FLASH_OFFSET + i * FLASH_PAGE_SIZE,
+                            (uint8_t *)StructData + i * FLASH_PAGE_SIZE,
+                            FLASH_PAGE_SIZE);
+    }
+}
+
+void *pico_read_data(void) {
+    char *tptr = (char *)(XIP_BASE + FLASH_OFFSET);
+    return tptr;
 }

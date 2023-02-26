@@ -62,4 +62,7 @@ void pico_write_identifier(password_t *Identifier, char *User, char *Password);
  */
 bool pico_read_identifier(void);
 
+void pico_write_data(void *StructData, uint16_t Size);
+void *pico_read_data(void);
+
 #endif /* __PICO_LIBRARY_H_ */
