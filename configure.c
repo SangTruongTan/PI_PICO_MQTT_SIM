@@ -26,6 +26,7 @@
 
 /* Private define ------------------------------------------------------------*/
 #ifdef PICO_DEVICES
+#include "password.h"
 #include "hardware/uart.h"
 #define LOG_OUTPUT(X, Y) \
     uart_puts(uart0, Y); \
@@ -46,7 +47,8 @@
     "package:<addmodbus=\"1122334455667788\";pos=y>\r\n"             \
     "5. MQTT Topic:<mqtttopic=\"Your Topic\";pos=y>\r\n"             \
     "6. MQTT Auth:<mqttuser=\"User\";mqttpassword=\"Password\">\r\n" \
-    "7. 4 - 20 mA Analog Sensor:<4-20sensor=xyz>\r\n"
+    "7. 4 - 20 mA Analog Sensor:<4-20sensor=xyz>\r\n"                \
+    "8. Save settings:<save>\r\n"
 
 #define CONFIGURE_ADD_PHONE_SYNTAX \
     "Check syntax again:<addphone=\"xxxxxxxxxx\";pos=y>"
@@ -167,6 +169,12 @@ void process_configure_sms(void) {
         if (configure_4_20_sensor() == false) {
             pConfigure->get_back(CONFIGURE_4_20_SENSOR_SYNTAX);
         }
+    } else if (strstr(pConfigure->SmsBuffer, "save") != NULL) {
+        LOGUF("Save configuration");
+        #ifdef PICO_DEVICES
+        pico_write_data((void *)pConfigure->identify, sizeof(Identifier_t));
+        #endif
+        pConfigure->get_back("*Save Configuration Successfully");
     } else {
         pConfigure->get_back(CONFIGURE_LIST);
     }

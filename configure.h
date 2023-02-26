@@ -34,7 +34,7 @@
 #include <string.h>
 
 /* Private defines -----------------------------------------------------------*/
-#define LOG_BUFFER 320
+#define LOG_BUFFER 412
 #define PICO_DEVICES 1      // Comment when you're testing on PC
 #define CONFIGURE_DEBUG 1  // Comment if there is no debuging enable
 #define DETAIL_LOGGING 1   // Comment if use undetails logging
