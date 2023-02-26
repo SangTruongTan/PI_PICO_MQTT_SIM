@@ -37,7 +37,7 @@
 #define LOG_BUFFER 320
 // #define PICO_DEVICES 1      // Comment when you're testing on PC
 #define CONFIGURE_DEBUG 1  // Comment if there is no debuging enable
-#define DETAIL_LOGGING 1  // Comment if use undetails logging
+#define DETAIL_LOGGING 1   // Comment if use undetails logging
 
 #ifdef CONFIGURE_DEBUG
 #ifdef DETAIL_LOGGING
@@ -79,15 +79,20 @@ typedef enum {
 } configuration_state_t;
 
 typedef struct {
-    configuration_state_t State;
-    char Sender[PHONE_LENGTH + 1];           // The sender telephone
-    char SmsBuffer[SMS_MESSAGE_LENGTH + 1];  // The buffer of the sms message
     char PhoneNumber[PHONE_LIST][PHONE_LENGTH + 1];
     unsigned char ModbusPacket[MODBUS_PACKAGE][MODBUS_SIZE_PACKAGE];
     char MqttTopic[MQTT_SIZE_TOPIC][MQTT_TOPIC_LENGTH + 1];
     char MqttUser[MQTT_USER_LENGTH + 1];
     char MqttPassword[MQTT_PASSWORD_LENGTH + 1];
     int FourTwentySensor;
+    uint8_t Index;
+} Identifier_t;
+
+typedef struct {
+    configuration_state_t State;
+    char Sender[PHONE_LENGTH + 1];           // The sender telephone
+    char SmsBuffer[SMS_MESSAGE_LENGTH + 1];  // The buffer of the sms message
+    Identifier_t *identify;
     bool (*get_back)(char *);
     bool (*send_sms)(char *, char *);
 } Configuration_t;

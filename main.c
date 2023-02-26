@@ -20,11 +20,11 @@
 /* Includes ------------------------------------------------------------------*/
 #include <stdio.h>
 
+#include "configure.h"
 #include "hardware/uart.h"
 #include "password.h"
 #include "pico/stdlib.h"
 #include "pico_library.h"
-#include "configure.h"
 
 /* Private includes ----------------------------------------------------------*/
 
@@ -52,6 +52,7 @@
 PicoLibrary_t mPicoLib;
 password_t mPass;
 Configuration_t mConfig;
+Identifier_t mIden;
 
 /* Private function prototypes -----------------------------------------------*/
 
@@ -76,6 +77,7 @@ int main() {
     // Initialize configure library
     mConfig.get_back = sms_get_back;
     mConfig.send_sms = sms_send;
+    mConfig.identify = &mIden;
 
     configure_init(&mConfig);
     process_configure_sms();
@@ -91,7 +93,8 @@ int main() {
     LOG("Go to receive message\r\n");
     while (1) {
         if (is_sms_readable()) {
-            sprintf(Buffer, "[%s]======>SMS:%s\r\n", mPicoLib.SmsSender, mPicoLib.SmsMsg);
+            sprintf(Buffer, "[%s]======>SMS:%s\r\n", mPicoLib.SmsSender,
+                    mPicoLib.SmsMsg);
             process_configure_sms();
             LOG(Buffer);
         }

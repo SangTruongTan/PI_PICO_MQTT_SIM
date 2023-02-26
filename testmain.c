@@ -33,6 +33,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 Configuration_t mConfigure;
+Identifier_t mIden;
 /* Private function prototypes -----------------------------------------------*/
 int main(void);
 void get_line_input(char *Buffer);
@@ -50,14 +51,15 @@ int main(void) {
     char *Message = mConfigure.SmsBuffer;
     mConfigure.get_back = main_get_back;
     mConfigure.send_sms = send_sms;
+    mConfigure.identify = &mIden;
     configure_init(&mConfigure);
     if (strcmp(SourcePhone, "") != 0) {
         strcpy(mConfigure.Sender, SourcePhone);
-        strcpy(mConfigure.PhoneNumber[0], SourcePhone);
+        strcpy(mConfigure.identify->PhoneNumber[0], SourcePhone);
     }
-    printf("Size of Struct:%ld\r\n", sizeof(Configuration_t));
-    //Test case
-    // strcpy(mConfigure.PhoneNumber[0], "1234");
+    printf("Size of Struct:%ld\r\n", sizeof(Identifier_t));
+    // Test case
+    //  strcpy(mConfigure.PhoneNumber[0], "1234");
     while (1) {
         printf("%d. ", count);
         if (strcmp(SourcePhone, "") == 0) {

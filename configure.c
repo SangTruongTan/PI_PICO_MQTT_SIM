@@ -90,15 +90,15 @@ bool is_receive_sms(void) {
 
 bool is_master_number(void) {
     LOGF("Sender:%s", pConfigure->Sender);
-    LOGF("Master:%s", pConfigure->PhoneNumber[0]);
-    if (strcmp(pConfigure->Sender, pConfigure->PhoneNumber[0]) == 0)
+    LOGF("Master:%s", pConfigure->identify->PhoneNumber[0]);
+    if (strcmp(pConfigure->Sender, pConfigure->identify->PhoneNumber[0]) == 0)
         return true;
     return false;
 }
 
 bool is_master_empty(void) {
-    LOGF("%s", pConfigure->PhoneNumber[0]);
-    if (pConfigure->PhoneNumber[0][0] == 0) {
+    LOGF("%s", pConfigure->identify->PhoneNumber[0]);
+    if (pConfigure->identify->PhoneNumber[0][0] == 0) {
         return true;
     }
     return false;
@@ -116,11 +116,11 @@ void add_master_number(void) {
             strtok(Buffer, "\"");
             char *tail = strtok(NULL, "\"");
             if (strlen(tail) == PHONE_LENGTH) {
-                strcpy(pConfigure->PhoneNumber[0], tail);
+                strcpy(pConfigure->identify->PhoneNumber[0], tail);
                 LOGF("Add Master Phone successfull with:%s",
-                     pConfigure->PhoneNumber[0]);
+                     pConfigure->identify->PhoneNumber[0]);
                 sprintf(Buffer, "*Configure Master Phone successfully:\"%s\"",
-                        pConfigure->PhoneNumber[0]);
+                        pConfigure->identify->PhoneNumber[0]);
                 pConfigure->get_back(Buffer);
                 is_valid = true;
             }
@@ -178,7 +178,8 @@ void list_phone(void) {
     if (Buffer != NULL && BufferLine != NULL) {
         LOGUF("In list phone");
         for (int i = 1; i < PHONE_LIST; i++) {
-            sprintf(BufferLine, "%d. %s\r\n", i, pConfigure->PhoneNumber[i]);
+            sprintf(BufferLine, "%d. %s\r\n", i,
+                    pConfigure->identify->PhoneNumber[i]);
             strcat(Buffer, BufferLine);
         }
         pConfigure->get_back(Buffer);
@@ -223,7 +224,7 @@ bool add_phone(void) {
                             Phone, iPos);
                     LOGUF(Buffer);
                     pConfigure->get_back(Buffer);
-                    strcpy(pConfigure->PhoneNumber[iPos], Phone);
+                    strcpy(pConfigure->identify->PhoneNumber[iPos], Phone);
                     retval = true;
                 }
             }
@@ -247,7 +248,8 @@ bool delete_phone(void) {
     if (pConfigure->SmsBuffer[iPos] >= '0' &&
         pConfigure->SmsBuffer[iPos] <= '9') {
         int iPhonePos = pConfigure->SmsBuffer[iPos] - '0';
-        memset(pConfigure->PhoneNumber[iPhonePos], '\0', PHONE_LENGTH + 1);
+        memset(pConfigure->identify->PhoneNumber[iPhonePos], '\0',
+               PHONE_LENGTH + 1);
         sprintf(Buffer, "Delete Phone %d successfully", iPhonePos);
         LOGUF(Buffer);
         pConfigure->get_back(Buffer);
@@ -273,8 +275,8 @@ bool add_modbus(void) {
             if (text2.isAvailable == true) {
                 int pos = atoi(text2.Target);
                 if (pos >= 0 && pos <= MODBUS_PACKAGE - 1) {  // Restriction
-                    hexa_string_to_bytes(text.Target,
-                                         pConfigure->ModbusPacket[pos]);
+                    hexa_string_to_bytes(
+                        text.Target, pConfigure->identify->ModbusPacket[pos]);
                     char *Buffer = calloc(32, sizeof(char));
                     char *Buffer1 = malloc(LOG_BUFFER);
                     if (Buffer == NULL || Buffer1 == NULL) {
@@ -283,7 +285,7 @@ bool add_modbus(void) {
                         char Hex[3];
                         for (int i = 0; i < MODBUS_SIZE_PACKAGE; i++) {
                             sprintf(Hex, "%X",
-                                    pConfigure->ModbusPacket[pos][i]);
+                                    pConfigure->identify->ModbusPacket[pos][i]);
                             strcat(Buffer, Hex);
                         }
                         sprintf(Buffer1,
@@ -318,14 +320,14 @@ bool add_mqtt_topic(void) {
             if (text2.isAvailable == true) {
                 int pos = atoi(text2.Target);
                 if (pos >= 0 && pos <= MQTT_SIZE_TOPIC - 1) {  // Restriction
-                    strcpy(pConfigure->MqttTopic[pos], text.Target);
+                    strcpy(pConfigure->identify->MqttTopic[pos], text.Target);
                     char *Buffer = malloc(LOG_BUFFER);
                     if (Buffer == NULL) {
                         LOGUF("!!!Not enough Heap memory!!!");
                     } else {
                         sprintf(Buffer,
                                 "*Add MQTT Topic successfully:[pos=%d]%s", pos,
-                                pConfigure->MqttTopic[pos]);
+                                pConfigure->identify->MqttTopic[pos]);
                         LOGUF(Buffer);
                         pConfigure->get_back(Buffer);
                         retval = true;
@@ -352,8 +354,8 @@ bool add_user_password(void) {
             strlen(text2.Target) > MQTT_PASSWORD_LENGTH) {
             LOGUF("User name or password length is longer than expected");
         } else {
-            strcpy(pConfigure->MqttUser, text.Target);
-            strcpy(pConfigure->MqttPassword, text2.Target);
+            strcpy(pConfigure->identify->MqttUser, text.Target);
+            strcpy(pConfigure->identify->MqttPassword, text2.Target);
             char *Buffer = malloc(LOG_BUFFER);
             if (Buffer == NULL) {
                 LOGUF("!!!Not enough Heap memory!!!");
@@ -361,7 +363,8 @@ bool add_user_password(void) {
                 sprintf(Buffer,
                         "*Add User and Password successfully:user=\"%s\" & "
                         "password=\"%s\"",
-                        pConfigure->MqttUser, pConfigure->MqttPassword);
+                        pConfigure->identify->MqttUser,
+                        pConfigure->identify->MqttPassword);
                 LOGUF(Buffer);
                 pConfigure->get_back(Buffer);
                 free(Buffer);
@@ -382,9 +385,9 @@ bool configure_4_20_sensor(void) {
     if (Text.isAvailable) {
         int value = atoi(Text.Target);
         if (value >= 0 && value <= 100) {
-            pConfigure->FourTwentySensor = value;
+            pConfigure->identify->FourTwentySensor = value;
             LOGF("*Configure 4-20mA Sensor Successfully:%d",
-                 pConfigure->FourTwentySensor);
+                 pConfigure->identify->FourTwentySensor);
             pConfigure->get_back("*Configure 4-20mA Sensor Successfully");
             retval = true;
         } else {
@@ -407,11 +410,12 @@ bool alert_status(float Value, float UpperThresold, float LowerThreshold) {
                     "Alert Alert: Over Threshold Analog Sensor->Value:%f",
                     Value);
             for (int i = 1; i < PHONE_LIST; i++) {
-                if (pConfigure->PhoneNumber[i][0] !=
+                if (pConfigure->identify->PhoneNumber[i][0] !=
                     '\0') {  // TODO: Verify by Regex
                     LOGF(Buffer, "\"%s\"==>%s", Buffer,
-                         pConfigure->PhoneNumber[i]);
-                    pConfigure->send_sms(pConfigure->PhoneNumber[i], Buffer);
+                         pConfigure->identify->PhoneNumber[i]);
+                    pConfigure->send_sms(pConfigure->identify->PhoneNumber[i],
+                                         Buffer);
                     retval = true;
                 }
             }

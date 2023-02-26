@@ -173,10 +173,10 @@ bool picolib_process(char *Buffer) {
             retval = true;
         }
     } else if (mPico->SmsDetected) {
-            strcpy(mPico->SmsMsg, Buffer);
-            mPico->SmsDetected = false;
-            mPico->is_sms_readable = true;
-            retval = true;
+        strcpy(mPico->SmsMsg, Buffer);
+        mPico->SmsDetected = false;
+        mPico->is_sms_readable = true;
+        retval = true;
     }
     return retval;
 }
@@ -313,8 +313,10 @@ bool sim_configure_network_mode(int Mode) {
     mPico->NetWorkMode = -1;
     sleep_ms(1000);
     handle_buffer();
-    if (mPico->NetWorkMode == -1) return false;
-    else return true;
+    if (mPico->NetWorkMode == -1)
+        return false;
+    else
+        return true;
 }
 
 bool sim_check_balance_available(char *Dial) {
@@ -435,8 +437,8 @@ bool mqtt_connect_server_authenticate(uint8_t ClientIdx, char *Server,
                                       char *Password) {
     char *Head = "AT+CMQTTCONNECT=";
     char *Buffer = malloc(128);
-    sprintf(Buffer, "%s%u,\"%s\",%u,%u,\"%s\",\"%s\"\r", Head, ClientIdx, Server,
-            KeepAliveTime, CleanSession, User, Password);
+    sprintf(Buffer, "%s%u,\"%s\",%u,%u,\"%s\",\"%s\"\r", Head, ClientIdx,
+            Server, KeepAliveTime, CleanSession, User, Password);
     sim_send_at_command(mPico->uartId, Buffer);
     LOG(Buffer);
     sleep_ms(2000);
@@ -621,9 +623,7 @@ bool sms_send(char *PhoneNumber, char *Text) {
     return retval;
 }
 
-bool sms_get_back(char *Text) {
-    return sms_send(mPico->SmsSender, Text);
-}
+bool sms_get_back(char *Text) { return sms_send(mPico->SmsSender, Text); }
 
 bool is_sms_readable() {
     bool retval = false;
@@ -674,8 +674,7 @@ bool mqtt_support_send(char *Cmd, char *Message) {
         LOG("\r\n");
         sleep_ms(1000);
         handle_buffer();
-        if (mPico->OkDetected == true)
-            retval = true;
+        if (mPico->OkDetected == true) retval = true;
     } else {
         retval = false;
     }

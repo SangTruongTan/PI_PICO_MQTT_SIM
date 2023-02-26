@@ -30,11 +30,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "configure.h"
 #include "hardware/uart.h"
 #include "pico/stdlib.h"
 #include "uartRingBuffer.h"
-
-#include "configure.h"
 /* Private defines -----------------------------------------------------------*/
 #define PICO_LIB_DEBUG 1  // Comment if there is no debuging enable
 
@@ -63,7 +62,7 @@ typedef struct {
     bool PublicMsgSuc;
     bool IsSimInserted;
     bool IsSocketAvailable;
-    int NetWorkMode; // - 1 means reading not successfully
+    int NetWorkMode;  // - 1 means reading not successfully
     int SignalStrength;
     int pRxTopic;
     int pRxMsg;
@@ -417,7 +416,7 @@ bool sms_send(char *PhoneNumber, char *Text);
 /**
  * @brief Send message back to Sender
  * @param Text Text message
-*/
+ */
 bool sms_get_back(char *Text);
 
 /**
