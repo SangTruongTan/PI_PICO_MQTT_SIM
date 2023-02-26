@@ -42,20 +42,23 @@ PicoLibrary_t *mPico;
 /* Private function prototypes -----------------------------------------------*/
 
 /* Private user code ---------------------------------------------------------*/
-void picolib_init(PicoLibrary_t *PicoParam) {
+bool picolib_init(PicoLibrary_t *PicoParam) {
     mPico = PicoParam;
     // uart Ring Buffer initialize
     mPico->RingHandler.uartId = mPico->uartId;
     Ring_Init(&mPico->RingHandler, mPico->baudrate, mPico->txPin, mPico->rxPin);
     // Sim Initialize
-    sim_init(mPico->uartId);
+    return sim_init(mPico->uartId);
 }
 
-void sim_init(uart_inst_t *Uart) {
+bool sim_init(uart_inst_t *Uart) {
     LOG("Initializing SIM module\r\n");
-    sim_send_test_command(Uart);
-    sim_forward_command(Uart, "AT&F\r");
-    sim_forward_command(Uart, "ATE0\r");
+    if (sim_send_test_command(Uart)) {
+        sim_forward_command(Uart, "AT&F\r");
+        sim_forward_command(Uart, "ATE0\r");
+        return true;
+    }
+    return false;
 }
 
 bool picolib_process(char *Buffer) {
@@ -200,10 +203,11 @@ void at_command_bio_forward(uart_inst_t *DebugUart, uart_inst_t *UartSim) {
     }
 }
 
-void sim_send_test_command(uart_inst_t *Uart) {
+bool sim_send_test_command(uart_inst_t *Uart) {
     char *Cmd = "AT\r";
     char *Buffer = malloc(10);
     char *Out = malloc(30);
+    int i = 0;
     while (1) {
         sim_send_at_command(Uart, Cmd);
         for (int i = 0; i < 4; i++) {
@@ -215,11 +219,14 @@ void sim_send_test_command(uart_inst_t *Uart) {
                     LOG("Sim is ready\r\n");
                     free(Buffer);
                     free(Out);
-                    return;
+                    return true;
                 }
             }
         }
         LOG("Connecting with SIM failed, try again...\r\n");
+        i++;
+        if (i == 5)
+            return false;
         sleep_ms(2000);
     }
 }
@@ -662,7 +669,12 @@ bool sms_send(char *PhoneNumber, char *Text) {
     } else {
         sprintf(Buffer, "%s\"%s\"\r", Head, PhoneNumber);
     }
-    if (mqtt_support_send(Buffer, Text)) retval = true;
+    char *Buf = malloc(strlen(Text) + 2);
+    if (Buf != NULL) {
+        sprintf(Buf, "%s\032", Text);
+        if (mqtt_support_send(Buffer, Buf)) retval = true;
+        free(Buf);
+    }
     free(Buffer);
     return retval;
 }

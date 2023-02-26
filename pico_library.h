@@ -83,16 +83,16 @@ typedef struct {
 /**
  * @brief Initialize the library.
  * @param PicoParam The vector of Libary parameter.
- * @retval void
+ * @retval bool
  */
-void picolib_init(PicoLibrary_t *PicoParam);
+bool picolib_init(PicoLibrary_t *PicoParam);
 
 /**
  * @brief Initialize module SIM.
  * @param Uart The pointer of uart instance.
- * @retval void
+ * @retval bool
  */
-void sim_init(uart_inst_t *Uart);
+bool sim_init(uart_inst_t *Uart);
 
 /**
  * @brief Handler the message receive from SIM module
@@ -114,9 +114,9 @@ void at_command_bio_forward(uart_inst_t *DebugUart, uart_inst_t *UartSim);
 /**
  * @brief Send test AT command and wait until successful.
  * @param Uart The pointer of uart instance.
- * @retval void
+ * @retval bool
  */
-void sim_send_test_command(uart_inst_t *Uart);
+bool sim_send_test_command(uart_inst_t *Uart);
 
 /**
  * @brief Forwarding AT command and reponse from SIM.

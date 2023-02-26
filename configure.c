@@ -40,7 +40,7 @@
     "*Syntax: <master=\"xxxxxxxxxx\";PIN=\"yyyyyy\">"
 #define CONFIGURE_DEFAULT_PIN "PIN=\"082308\""
 #define CONFIGURE_LIST                                               \
-    "1. Add phone number:<addphone=\"xxxxxxxxxx\";pos=y>\r\n"        \
+    "1. Add phone number:<addphone=\"xxxxxxxxxxxx\";pos=y>\r\n"        \
     "2. Delete phone:<deletephone=y>\r\n"                            \
     "3. List phone:<listphone=?>\r\n"                                \
     "4. Add modbus master "                                          \
@@ -51,7 +51,7 @@
     "8. Save settings:<save>\r\n"
 
 #define CONFIGURE_ADD_PHONE_SYNTAX \
-    "Check syntax again:<addphone=\"xxxxxxxxxx\";pos=y>"
+    "Check syntax again:<addphone=\"xxxxxxxxxxxx\";pos=y>"
 #define CONFIGURE_DELETE_PHONE_SYNTAX "Check syntax again:<deltephone=y>"
 #define CONFIGURE_ADD_MODBUS_SYNTAX \
     "Check syntax again:<addmodbus=\"1122334455667788\";pos=y>"
@@ -307,11 +307,11 @@ bool add_modbus(void) {
                     free(Buffer);
                     free(Buffer1);
                 }
+            free(text2.Target);
             }
         }
-    }
     free(text.Target);
-    free(text2.Target);
+    }
     return retval;
 }
 
@@ -343,11 +343,11 @@ bool add_mqtt_topic(void) {
                     }
                     free(Buffer);
                 }
+            free(text2.Target);
             }
         }
-    }
     free(text.Target);
-    free(text2.Target);
+    }
     return retval;
 }
 
@@ -381,8 +381,10 @@ bool add_user_password(void) {
             }
         }
     }
-    free(text.Target);
-    free(text2.Target);
+    if (text.isAvailable)
+        free(text.Target);
+    if (text2.isAvailable)
+        free(text2.Target);
     return retval;
 }
 
@@ -402,8 +404,8 @@ bool configure_4_20_sensor(void) {
         } else {
             LOGUF("Configure value out of range");
         }
+        free(Text.Target);
     }
-    free(Text.Target);
     return retval;
 }
 

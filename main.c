@@ -81,13 +81,13 @@ int main() {
     mConfig.identify = &mIden;
 
     configure_init(&mConfig);
-    process_configure_sms();
     // Call pico library init
     picolib_init(&mPicoLib);
 
     // SMS example
     char *Buffer = malloc(128);
     LOG("Testing SMS functionality\r\n");
+    // strcpy(mIden.PhoneNumber[1], "921234567899");
     sms_set_mode(1);
     sms_remove_messages();
     // sms_send("YourPhoneNumber", "Hello, great\032");
@@ -96,7 +96,7 @@ int main() {
         if (is_sms_readable()) {
             sprintf(Buffer, "[%s]======>SMS:%s\r\n", mPicoLib.SmsSender,
                     mPicoLib.SmsMsg);
-            process_configure_sms();
+            configure_main_process();
             LOG(Buffer);
         }
         sleep_ms(500);
