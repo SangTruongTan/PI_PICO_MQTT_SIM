@@ -160,6 +160,9 @@ bool picolib_process(char *Buffer) {
             }
         }
         retval = true;
+    } else if (strstr(Buffer, "+CMTI")) {
+        mPico->SmsCMTIDetected = true;
+        retval = true;
     } else if (mPico->IsRxTopic) {
         if (PICO_RX_TOPIC_LENGTH - mPico->pRxTopic >= strlen(Buffer)) {
             strcpy(mPico->RxTopic + mPico->pRxTopic, Buffer);
@@ -175,6 +178,7 @@ bool picolib_process(char *Buffer) {
     } else if (mPico->SmsDetected) {
         strcpy(mPico->SmsMsg, Buffer);
         mPico->SmsDetected = false;
+        mPico->SmsCMTIDetected = false;
         mPico->is_sms_readable = true;
         retval = true;
     }
@@ -653,10 +657,10 @@ bool sms_send(char *PhoneNumber, char *Text) {
     bool retval = false;
     char *Head = "AT+CMGS=";
     char *Buffer = malloc(64);
-    if (PhoneNumber[0] == '+') {
-        sprintf(Buffer, "%s\"%s\"\r", Head, PhoneNumber);
-    } else {
+    if (strlen(PhoneNumber) > 10) {
         sprintf(Buffer, "%s\"+%s\"\r", Head, PhoneNumber);
+    } else {
+        sprintf(Buffer, "%s\"%s\"\r", Head, PhoneNumber);
     }
     if (mqtt_support_send(Buffer, Text)) retval = true;
     free(Buffer);
@@ -668,6 +672,12 @@ bool sms_get_back(char *Text) { return sms_send(mPico->SmsSender, Text); }
 bool is_sms_readable() {
     bool retval = false;
     handle_buffer();
+    if (mPico->SmsCMTIDetected) {
+        char *Cmd = "AT+CMGL=\"REC UNREAD\"\r";
+        sim_send_at_command(mPico->uartId, Cmd);
+    }
+    sleep_ms(2000);
+    handle_buffer();
     sleep_ms(2000);
     handle_buffer();
     if (mPico->is_sms_readable) {
@@ -678,7 +688,7 @@ bool is_sms_readable() {
 }
 
 bool sms_remove_messages() {
-    char *Cmd = " AT+CMGD=,1\r";
+    char *Cmd = "AT+CMGD=,4\r";
     sim_send_at_command(mPico->uartId, Cmd);
     LOG(Cmd);
     sleep_ms(1000);

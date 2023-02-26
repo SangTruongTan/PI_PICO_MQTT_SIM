@@ -58,6 +58,7 @@ typedef struct {
     bool IsRxPayload;
     bool OkDetected;
     bool SmsDetected;
+    bool SmsCMTIDetected;
     bool is_sms_readable;
     bool PublicMsgSuc;
     bool IsSimInserted;
