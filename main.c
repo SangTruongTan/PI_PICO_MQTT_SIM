@@ -24,6 +24,7 @@
 #include "password.h"
 #include "pico/stdlib.h"
 #include "pico_library.h"
+#include "configure.c"
 
 /* Private includes ----------------------------------------------------------*/
 
@@ -50,6 +51,7 @@
 /* Private variables ---------------------------------------------------------*/
 PicoLibrary_t mPicoLib;
 password_t mPass;
+Configuration_t mConfig;
 
 /* Private function prototypes -----------------------------------------------*/
 
@@ -69,6 +71,8 @@ int main() {
     mPicoLib.txPin = UART_TX_PIN;
     mPicoLib.rxPin = UART_RX_PIN;
 
+    configure_init(&mConfig);
+    process_configure_sms();
     // Call pico library init
     picolib_init(&mPicoLib);
 
