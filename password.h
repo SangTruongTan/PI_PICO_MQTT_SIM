@@ -62,7 +62,17 @@ void pico_write_identifier(password_t *Identifier, char *User, char *Password);
  */
 bool pico_read_identifier(void);
 
+/**
+ * @brief Write data to flash with static offset
+ * @param StructData The pointer of struct data
+ * @param Size The size of data
+ */
 void pico_write_data(void *StructData, uint16_t Size);
+
+/**
+ * @brief Read data from flash
+ * @return void* Return the pointer of data
+ */
 void *pico_read_data(void);
 
 #endif /* __PICO_LIBRARY_H_ */

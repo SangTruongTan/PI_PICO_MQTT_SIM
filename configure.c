@@ -21,11 +21,12 @@
 #include "configure.h"
 
 /* Private includes ----------------------------------------------------------*/
-#include "hardware/uart.h"
+
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
 #ifdef PICO_DEVICES
+#include "hardware/uart.h"
 #define LOG_OUTPUT(X, Y) \
     uart_puts(uart0, Y); \
     uart_puts(uart0, "\r\n")

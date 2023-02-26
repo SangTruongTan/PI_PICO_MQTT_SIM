@@ -79,19 +79,19 @@ bool pico_read_identifier(void) {
 }
 
 void pico_write_data(void *StructData, uint16_t Size) {
-    LOG("Remove data with number of sector:");
+    char *Buffer = malloc(64);
     int NumberOfSectors = ceil((float)Size / FLASH_SECTOR_SIZE);
-    LOG(NumberOfSectors);
-    LOG("\r\n");
+    sprintf(Buffer, "Remove data with number of sector:%d\r\n",
+            NumberOfSectors);
+    LOG(Buffer);
     for (int i = 0; i < NumberOfSectors; i++) {
         LOG("===>Erase the flash sector\r\n");
         flash_range_erase(FLASH_OFFSET, FLASH_SECTOR_SIZE);
         LOG("===>Write data to flash page\r\n");
     }
     int NumberOfPages = ceil((float)Size / FLASH_PAGE_SIZE);
-    LOG("Number of Pages to write:");
-    LOG(NumberOfPages);
-    LOG("\r\n");
+    sprintf(Buffer, "Number of Pages to write:%s\r\n", NumberOfPages);
+    LOG(Buffer);
     for (int i = 0; i < NumberOfPages; i++) {
         LOG("===>Write data to flash page\r\n");
         flash_range_program(FLASH_OFFSET + i * FLASH_PAGE_SIZE,
