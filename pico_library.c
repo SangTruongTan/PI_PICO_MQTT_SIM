@@ -602,6 +602,42 @@ bool mqtt_is_rx_readable() {
     return retval;
 }
 
+void http_start(void) {
+    char *Cmd = "AT+HTTPINIT\r";
+    sim_send_at_command(mPico->uartId, Cmd);
+    LOG(Cmd);
+    sleep_ms(2000);
+}
+
+void http_stop(void) {
+    char *Cmd = "AT+HTTPTERM\r";
+    sim_send_at_command(mPico->uartId, Cmd);
+    LOG(Cmd);
+    sleep_ms(2000);
+}
+
+void http_set_param_url(char *Url) {
+    char *Buffer = malloc(128);
+    if (Buffer == NULL)
+        return;
+    sprintf(Buffer, "AT+HTTPPARA=\"URL\",\"%s\"\r", Url);
+    sim_send_at_command(mPico->uartId, Buffer);
+    LOG(Buffer);
+    sleep_ms(4000);
+    free(Buffer);
+}
+
+void http_action(int Action) {
+    char *Buffer = malloc(32);
+    if (Buffer == NULL)
+        return;
+    sprintf(Buffer, "AT+HTTPACTION=%d\r", Action);
+    sim_send_at_command(mPico->uartId, Buffer);
+    LOG(Buffer);
+    sleep_ms(4000);
+    free(Buffer);
+}
+
 void sms_set_mode(uint8_t Mode) {
     char *Head = "AT+CMGF=";
     char *Buffer = malloc(16);

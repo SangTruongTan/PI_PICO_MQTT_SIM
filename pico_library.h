@@ -396,6 +396,29 @@ bool mqtt_configure_context(uint8_t ClientIdx, uint8_t CheckUtf8Flag);
  */
 bool mqtt_is_rx_readable();
 
+/* HTTP(s) APIs*/
+/**
+ * @brief Start HTTP(s) Service
+ */
+void http_start(void);
+
+/**
+ * @brief Stop HTTP(s) Service
+ */
+void http_stop(void);
+
+/**
+ * @brief Set URL HTTP(s)
+ * @param Url Example: "https://github.com"
+ */
+void http_set_param_url(char *Url);
+
+/**
+ * @brief Send HTTP(s) action
+ * @param Action 0. GET; 1. POST; 2.HEAD; 3.DELETE
+ */
+void http_action(int Action);
+
 /* SMS Support Functions */
 /**
  * @brief Sms set mode
