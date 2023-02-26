@@ -113,7 +113,12 @@ bool picolib_process(char *Buffer) {
             retval = true;
         }
     } else if (strstr(Buffer, "+CMGL:")) {
-        mPico->SmsDetected = true;
+        substr_t text = substr(Buffer, "\"+", "\"");
+        if (text.isAvailable) {
+            strcpy(mPico->SmsSender, text.Target);
+            free(text.Target);
+            mPico->SmsDetected = true;
+        }
         retval = true;
     } else if (strstr(Buffer, "+CSQ:") && strstr(Buffer, ",")) {
         if (strtok(Buffer, ": ") != NULL) {
@@ -614,6 +619,10 @@ bool sms_send(char *PhoneNumber, char *Text) {
     if (mqtt_support_send(Buffer, Text)) retval = true;
     free(Buffer);
     return retval;
+}
+
+bool sms_get_back(char *Text) {
+    return sms_send(mPico->SmsSender, Text);
 }
 
 bool is_sms_readable() {

@@ -88,8 +88,8 @@ typedef struct {
     char MqttUser[MQTT_USER_LENGTH + 1];
     char MqttPassword[MQTT_PASSWORD_LENGTH + 1];
     int FourTwentySensor;
-    void (*get_back)(const char *, ...);
-    void (*send_sms)(const char *, const char *, ...);
+    bool (*get_back)(char *);
+    bool (*send_sms)(char *, char *);
 } Configuration_t;
 
 /* Exported constants --------------------------------------------------------*/

@@ -34,6 +34,7 @@
 #include "pico/stdlib.h"
 #include "uartRingBuffer.h"
 
+#include "configure.h"
 /* Private defines -----------------------------------------------------------*/
 #define PICO_LIB_DEBUG 1  // Comment if there is no debuging enable
 
@@ -68,7 +69,8 @@ typedef struct {
     int pRxMsg;
     char RxTopic[PICO_RX_TOPIC_LENGTH];
     char RxMsg[PICO_RX_MSG_LENGTH];
-    char SmsMsg[PICO_SMS_LENGTH];
+    char *SmsMsg;
+    char *SmsSender;
     char BalanceAvailable[PICO_BALANCE_LENGTH];
     char NetworkProvider[32];
 } PicoLibrary_t;
@@ -411,6 +413,12 @@ void sms_set_mode(uint8_t Mode);
  * @param bool True means send sms succesfully and opposite for False.
  */
 bool sms_send(char *PhoneNumber, char *Text);
+
+/**
+ * @brief Send message back to Sender
+ * @param Text Text message
+*/
+bool sms_get_back(char *Text);
 
 /**
  * @brief Whether available SMS Read unread message

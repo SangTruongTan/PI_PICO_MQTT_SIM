@@ -24,7 +24,7 @@
 #include "password.h"
 #include "pico/stdlib.h"
 #include "pico_library.h"
-#include "configure.c"
+#include "configure.h"
 
 /* Private includes ----------------------------------------------------------*/
 
@@ -70,12 +70,33 @@ int main() {
     mPicoLib.baudrate = BAUDRATE;
     mPicoLib.txPin = UART_TX_PIN;
     mPicoLib.rxPin = UART_RX_PIN;
+    mPicoLib.SmsSender = mConfig.Sender;
+    mPicoLib.SmsMsg = mConfig.SmsBuffer;
+
+    // Initialize configure library
+    mConfig.get_back = sms_get_back;
+    mConfig.send_sms = sms_send;
 
     configure_init(&mConfig);
     process_configure_sms();
     // Call pico library init
     picolib_init(&mPicoLib);
 
+    // SMS example
+    char *Buffer = malloc(128);
+    LOG("Testing SMS functionality\r\n");
+    sms_set_mode(1);
+    sms_remove_messages();
+    // sms_send("YourPhoneNumber", "Hello, great\032");
+    LOG("Go to receive message\r\n");
+    while (1) {
+        if (is_sms_readable()) {
+            sprintf(Buffer, "[%s]======>SMS:%s\r\n", mPicoLib.SmsSender, mPicoLib.SmsMsg);
+            process_configure_sms();
+            LOG(Buffer);
+        }
+        sleep_ms(500);
+    }
     // Test flashing user and password
     LOG("*** Flasing the user and password ***\r\n");
     pico_write_identifier(
@@ -96,7 +117,6 @@ int main() {
         ;
     // Basic functionality
     LOG("*** Test basic functionality\r\n ***");
-    char *Buffer = malloc(128);
     LOG("Check is SIM Inserter\r\n");
     if (sim_is_inserted()) {
         LOG("Sim is inserted!!!\r\n");
@@ -144,19 +164,6 @@ int main() {
     }
     while (1)
         ;
-    // SMS example
-    LOG("Testing SMS functionality\r\n");
-    sms_set_mode(1);
-    sms_remove_messages();
-    sms_send("YourPhoneNumber", "Hello, great\032");
-    LOG("Go to receive message\r\n");
-    while (1) {
-        if (is_sms_readable()) {
-            sprintf(Buffer, "======>SMS:%s\r\n", mPicoLib.SmsMsg);
-            LOG(Buffer);
-        }
-        sleep_ms(500);
-    }
     // MQTT example
     // Try to stop MQTT service first
     mqtt_disconnect_server(0, 90);
