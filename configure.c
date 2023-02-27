@@ -26,8 +26,8 @@
 
 /* Private define ------------------------------------------------------------*/
 #ifdef PICO_DEVICES
-#include "password.h"
 #include "hardware/uart.h"
+#include "password.h"
 #define LOG_OUTPUT(X, Y) \
     uart_puts(uart0, Y); \
     uart_puts(uart0, "\r\n")
@@ -40,7 +40,7 @@
     "*Syntax: <master=\"xxxxxxxxxx\";PIN=\"yyyyyy\">"
 #define CONFIGURE_DEFAULT_PIN "PIN=\"082308\""
 #define CONFIGURE_LIST                                               \
-    "1. Add phone number:<addphone=\"xxxxxxxxxxxx\";pos=y>\r\n"        \
+    "1. Add phone number:<addphone=\"xxxxxxxxxxxx\";pos=y>\r\n"      \
     "2. Delete phone:<deletephone=y>\r\n"                            \
     "3. List phone:<listphone=?>\r\n"                                \
     "4. Add modbus master "                                          \
@@ -51,15 +51,15 @@
     "8. Save settings:<save>\r\n"
 
 #define CONFIGURE_ADD_PHONE_SYNTAX \
-    "Check syntax again:<addphone=\"xxxxxxxxxxxx\";pos=y>"
-#define CONFIGURE_DELETE_PHONE_SYNTAX "Check syntax again:<deltephone=y>"
+    "Add phone number:<addphone=\"xxxxxxxxxxxx\";pos=y>"
+#define CONFIGURE_DELETE_PHONE_SYNTAX "Delete phone number:<deltephone=y>"
 #define CONFIGURE_ADD_MODBUS_SYNTAX \
-    "Check syntax again:<addmodbus=\"1122334455667788\";pos=y>"
+    "Add Modbus package:<addmodbus=\"1122334455667788\";pos=y>"
 #define CONFIGURE_MQTT_TOPIC_SYNTAX \
-    "Check syntax again:<mqtttopic=\"Your Topic\";pos=y>"
+    "Add MQTT Topic:<mqtttopic=\"Your Topic\";pos=y>"
 #define CONFIGURE_MQTT_AUTH_SYNTAX \
-    "Check syntax again:<mqttuser=\"User\";mqttpassword=\"Password\">"
-#define CONFIGURE_4_20_SENSOR_SYNTAX "Check syntax again:<4-20sensor=xyz>"
+    "Add MQTT Authentication:<mqttuser=\"User\";mqttpassword=\"Password\">"
+#define CONFIGURE_4_20_SENSOR_SYNTAX "Add 4-20mA Analog Sensor:<4-20sensor=xyz>"
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
@@ -141,10 +141,24 @@ void add_master_number(void) {
 
 void process_configure_sms(void) {
     LOGUF("In Process configure");
-    if (strstr(pConfigure->SmsBuffer, "configure=?")) {
-        pConfigure->get_back(CONFIGURE_LIST);
-    } else if (strstr(pConfigure->SmsBuffer, "listphone=?")) {
-        list_phone();
+    if (strstr(pConfigure->SmsBuffer, "=?") != NULL) {
+        if (strstr(pConfigure->SmsBuffer, "configure=?")) {
+            pConfigure->get_back(CONFIGURE_LIST);
+        } else if (strstr(pConfigure->SmsBuffer, "listphone=?")) {
+            list_phone();
+        } else if (strstr(pConfigure->SmsBuffer, "addphone=?")) {
+            pConfigure->get_back(CONFIGURE_ADD_PHONE_SYNTAX);
+        } else if (strstr(pConfigure->SmsBuffer, "deletephone=?")) {
+            pConfigure->get_back(CONFIGURE_DELETE_PHONE_SYNTAX);
+        } else if (strstr(pConfigure->SmsBuffer, "addmodbus=?")) {
+            pConfigure->get_back(CONFIGURE_ADD_MODBUS_SYNTAX);
+        } else if (strstr(pConfigure->SmsBuffer, "mqtttopic=?")) {
+            pConfigure->get_back(CONFIGURE_MQTT_TOPIC_SYNTAX);
+        } else if (strstr(pConfigure->SmsBuffer, "mqttauth=?")) {
+            pConfigure->get_back(CONFIGURE_MQTT_AUTH_SYNTAX);
+        } else if (strstr(pConfigure->SmsBuffer, "4-20sensor=?")) {
+            pConfigure->get_back(CONFIGURE_4_20_SENSOR_SYNTAX);
+        }
     } else if (strstr(pConfigure->SmsBuffer, "addphone=\"")) {
         if (add_phone() == false) {
             pConfigure->get_back(CONFIGURE_ADD_PHONE_SYNTAX);
@@ -171,10 +185,16 @@ void process_configure_sms(void) {
         }
     } else if (strstr(pConfigure->SmsBuffer, "save") != NULL) {
         LOGUF("Save configuration");
-        #ifdef PICO_DEVICES
+#ifdef PICO_DEVICES
         pico_write_data((void *)pConfigure->identify, sizeof(Identifier_t));
-        #endif
+#endif
         pConfigure->get_back("*Save Configuration Successfully");
+    } else if (strstr(pConfigure->SmsBuffer, "value=") != NULL) {
+        // Only for testing purposes.
+        substr_t text = substr(pConfigure->SmsBuffer, "value=", "\032");
+        float val = atof(text.Target);
+        alert_status(val, 30.1, 60.2);
+        free(text.Target);
     } else {
         pConfigure->get_back(CONFIGURE_LIST);
     }
@@ -307,10 +327,10 @@ bool add_modbus(void) {
                     free(Buffer);
                     free(Buffer1);
                 }
-            free(text2.Target);
+                free(text2.Target);
             }
         }
-    free(text.Target);
+        free(text.Target);
     }
     return retval;
 }
@@ -343,10 +363,10 @@ bool add_mqtt_topic(void) {
                     }
                     free(Buffer);
                 }
-            free(text2.Target);
+                free(text2.Target);
             }
         }
-    free(text.Target);
+        free(text.Target);
     }
     return retval;
 }
@@ -381,10 +401,8 @@ bool add_user_password(void) {
             }
         }
     }
-    if (text.isAvailable)
-        free(text.Target);
-    if (text2.isAvailable)
-        free(text2.Target);
+    free(text.Target);
+    free(text2.Target);
     return retval;
 }
 
@@ -462,24 +480,21 @@ void LOG(const char *format, ...) {
 }
 
 substr_t substr(char *Text, const char *HeadDelim, const char *TailDelim) {
-    substr_t retval;
-    retval.isAvailable = false;
-    char *target = NULL;
+    substr_t retval = {.isAvailable = false, .Target = NULL};
     char *start, *end;
     if (start = strstr(Text, HeadDelim)) {
         start += strlen(HeadDelim);
         end = (*TailDelim == '\032') ? (start + strlen(Text))
                                      : strstr(start, TailDelim);
         if (end) {
-            target = (char *)malloc(end - start + 1);
-            if (target == NULL) {
+            retval.Target = (char *)malloc(end - start + 1);
+            if (retval.Target == NULL) {
                 LOGUF("!!!Not enough Heap memory!!!");
                 return retval;
             }
-            memcpy(target, start, end - start);
-            target[end - start] = '\0';
+            memcpy(retval.Target, start, end - start);
+            retval.Target[end - start] = '\0';
             retval.isAvailable = true;
-            retval.Target = target;
         }
     }
     return retval;

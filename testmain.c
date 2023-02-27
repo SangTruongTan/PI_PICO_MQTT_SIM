@@ -57,7 +57,7 @@ int main(void) {
         strcpy(mConfigure.Sender, SourcePhone);
         strcpy(mConfigure.identify->PhoneNumber[0], SourcePhone);
     }
-    printf("Size of Struct:%ld\r\n", sizeof(Identifier_t));
+    // printf("Size of Struct:%ld\r\n", sizeof(Identifier_t));
     // Test case
     //  strcpy(mConfigure.PhoneNumber[0], "1234");
     while (1) {
@@ -72,15 +72,16 @@ int main(void) {
         if (strcmp(Message, "exit") == 0 || strcmp(SourcePhone, "exit") == 0)
             return 0;
         printf("\n");
-        if (strstr(Message, "value=") != NULL) {
-            substr_t text = substr(Message, "value=", "\032");
-            float val = atof(text.Target);
-            printf("Value:%f\r\n", val);
-            alert_status(val, 30.1, 60.2);
-            free(text.Target);
-        } else {
-            configure_main_process();
-        }
+        // if (strstr(Message, "value=") != NULL) {
+        //     substr_t text = substr(Message, "value=", "\032");
+        //     float val = atof(text.Target);
+        //     printf("Value:%f\r\n", val);
+        //     alert_status(val, 30.1, 60.2);
+        //     free(text.Target);
+        // } else {
+        //     configure_main_process();
+        // }
+        configure_main_process();
         count += 1;
     }
     return 0;
