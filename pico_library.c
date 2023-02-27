@@ -74,6 +74,21 @@ bool picolib_process(char *Buffer) {
         retval = true;
     } else if (strcmp(Buffer, "\r\n") == 0) {
         retval = false;
+    } else if (strstr(Buffer, "+HTTP")) {
+        if (strstr(Buffer, "+HTTPACTION:")) {
+            substr_t text = substr(Buffer, ",", ",");
+            if (text.isAvailable == true) {
+                int code = atoi(text.Target);
+                mPico->HTTPResponseCode = code;
+            }
+        } else if (strstr(Buffer, "+HTTPHEAD:")) {
+            substr_t text = substr(Buffer, "DATA,", "\032");
+            if (text.isAvailable == true) {
+                int length = atoi(text.Target);
+                mPico->HTTPDataLength = length;
+            }
+        }
+        retval = true;
     } else if (strstr(Buffer, "+CMQTTSTART:")) {
         if (strstr(Buffer, "0")) {
             mPico->MqttStarted = true;
@@ -184,6 +199,17 @@ bool picolib_process(char *Buffer) {
         mPico->SmsCMTIDetected = false;
         mPico->is_sms_readable = true;
         retval = true;
+    } else if (mPico->HTTPDataLength > -1) {
+        if (mPico->HTTPData == NULL) {
+            mPico->HTTPData = malloc(strlen(Buffer) + 1);
+        } else {
+            mPico->HTTPData = realloc(
+                mPico->HTTPData, strlen(mPico->HTTPData) + strlen(Buffer) + 1);
+        }
+        strcat(mPico->HTTPData, Buffer);
+        if (strlen(mPico->HTTPData) >= mPico->HTTPDataLength - 2) {
+            mPico->HTTPDataLength = -2;
+        }
     }
     return retval;
 }
@@ -225,8 +251,7 @@ bool sim_send_test_command(uart_inst_t *Uart) {
         }
         LOG("Connecting with SIM failed, try again...\r\n");
         i++;
-        if (i == 5)
-            return false;
+        if (i == 5) return false;
         sleep_ms(2000);
     }
 }
@@ -629,8 +654,7 @@ void http_stop(void) {
 
 void http_set_param_url(char *Url) {
     char *Buffer = malloc(128);
-    if (Buffer == NULL)
-        return;
+    if (Buffer == NULL) return;
     sprintf(Buffer, "AT+HTTPPARA=\"URL\",\"%s\"\r", Url);
     sim_send_at_command(mPico->uartId, Buffer);
     LOG(Buffer);
@@ -638,15 +662,39 @@ void http_set_param_url(char *Url) {
     free(Buffer);
 }
 
-void http_action(int Action) {
+int http_action(int Action) {
     char *Buffer = malloc(32);
-    if (Buffer == NULL)
-        return;
+    if (Buffer == NULL) return -2;
     sprintf(Buffer, "AT+HTTPACTION=%d\r", Action);
     sim_send_at_command(mPico->uartId, Buffer);
     LOG(Buffer);
-    sleep_ms(4000);
+    for (int i = 0; i < 5; i++) {
+        mPico->HTTPResponseCode = -1;
+        handle_buffer();
+        if (mPico->HTTPResponseCode != -1) {
+            break;
+        }
+        sleep_ms(3000);
+    }
     free(Buffer);
+    return mPico->HTTPResponseCode;
+}
+
+char *http_read_head() {
+    char *Cmd = "AT+HTTPHEAD\r";
+    sim_send_at_command(mPico->uartId, Cmd);
+    LOG(Cmd);
+    mPico->HTTPData = NULL;
+    mPico->HTTPDataLength = -1;
+    for (int i = 0; i < 4; i++) {
+        handle_buffer();
+        if (mPico->HTTPDataLength == -2) {
+            break;
+        }
+        sleep_ms(500);
+    }
+    mPico->HTTPDataLength = -1;
+    return mPico->HTTPData;
 }
 
 void sms_set_mode(uint8_t Mode) {

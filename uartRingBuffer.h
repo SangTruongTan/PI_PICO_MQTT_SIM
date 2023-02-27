@@ -35,7 +35,7 @@
 #include "hardware/irq.h"
 
 /* Private defines -----------------------------------------------------------*/
-#define RING_BUFFER_SIZE 256
+#define RING_BUFFER_SIZE 1024
 #define RING_RX_BUFFER 200
 
 // define UART_RING_BUFFER_DEBUG 1

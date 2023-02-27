@@ -73,6 +73,9 @@ typedef struct {
     char *SmsSender;
     char BalanceAvailable[PICO_BALANCE_LENGTH];
     char NetworkProvider[32];
+    int HTTPResponseCode;
+    int HTTPDataLength;
+    char *HTTPData;
 } PicoLibrary_t;
 
 /* Exported constants --------------------------------------------------------*/
@@ -417,8 +420,19 @@ void http_set_param_url(char *Url);
 /**
  * @brief Send HTTP(s) action
  * @param Action 0. GET; 1. POST; 2.HEAD; 3.DELETE
+ * @retval -2 means Not enough memory
+ * @retval -1 means request but no response
+ * @retval 0 means receive response with error
+ * @retval Otherwise Code Response
  */
-void http_action(int Action);
+int http_action(int Action);
+
+/**
+ * @brief Read the Head response from action. Should be call http_action()
+ * first.
+ * @return char* The pointer of data (Should be free() after using).
+ */
+char *http_read_head();
 
 /* SMS Support Functions */
 /**

@@ -112,6 +112,23 @@ int main() {
     LOG(Buffer);
     while (1)
         ;
+    // Test HTTP(s) APIs
+    LOG("*** Test HTTP(s) APIs ***\r\n");
+    LOG("Start HTTP service\r\n");
+    http_start();
+    LOG("Set URL\r\n");
+    http_set_param_url("https://google.com");
+    if (http_action(0) > 0) {
+        sprintf(Buffer, "Response Code:%d\r\n", mPicoLib.HTTPResponseCode);
+        LOG(Buffer);
+        LOG("Get Header data\r\n");
+        char *header = http_read_head();
+        if (header != NULL) {
+            LOG("Read Header data successfully\r\n");
+            LOG(header);
+            free(header);
+        }
+    }
     // Basic functionality
     LOG("*** Test basic functionality\r\n ***");
     LOG("Check is SIM Inserter\r\n");
