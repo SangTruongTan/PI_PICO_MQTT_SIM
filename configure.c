@@ -39,12 +39,14 @@
 #define CONFIGURE_MASTER_PHONE_SYNTAX \
     "*Syntax: <master=\"xxxxxxxxxx\";PIN=\"yyyyyy\">"
 #define CONFIGURE_DEFAULT_PIN "PIN=\"082308\""
-#define CONFIGURE_LIST                                               \
-    "1. Add phone number:<addphone=\"xxxxxxxxxxxx\";pos=y>\r\n"      \
+#define CONFIGURE_LIST_1                                               \
+    "1. Add phone number:<addphone=\"xxxxxxxxxx\";pos=y>\r\n"        \
     "2. Delete phone:<deletephone=y>\r\n"                            \
     "3. List phone:<listphone=?>\r\n"                                \
     "4. Add modbus master "                                          \
-    "package:<addmodbus=\"1122334455667788\";pos=y>\r\n"             \
+    "package:<addmodbus=\"1122334455667788\";pos=y>\r\n"
+
+#define CONFIGURE_LIST_2 \
     "5. MQTT Topic:<mqtttopic=\"Your Topic\";pos=y>\r\n"             \
     "6. MQTT Auth:<mqttuser=\"User\";mqttpassword=\"Password\">\r\n" \
     "7. 4 - 20 mA Analog Sensor:<4-20sensor=xyz>\r\n"                \
@@ -143,7 +145,8 @@ void process_configure_sms(void) {
     LOGUF("In Process configure");
     if (strstr(pConfigure->SmsBuffer, "=?") != NULL) {
         if (strstr(pConfigure->SmsBuffer, "configure=?")) {
-            pConfigure->get_back(CONFIGURE_LIST);
+            pConfigure->get_back(CONFIGURE_LIST_1);
+            pConfigure->get_back(CONFIGURE_LIST_2);
         } else if (strstr(pConfigure->SmsBuffer, "listphone=?")) {
             list_phone();
         } else if (strstr(pConfigure->SmsBuffer, "addphone=?")) {
@@ -196,7 +199,8 @@ void process_configure_sms(void) {
         alert_status(val, 30.1, 60.2);
         free(text.Target);
     } else {
-        pConfigure->get_back(CONFIGURE_LIST);
+        pConfigure->get_back(CONFIGURE_LIST_1);
+        pConfigure->get_back(CONFIGURE_LIST_2);
     }
 }
 

@@ -181,6 +181,9 @@ bool picolib_process(char *Buffer) {
     } else if (strstr(Buffer, "+CMTI")) {
         mPico->SmsCMTIDetected = true;
         retval = true;
+    } else if (strstr(Buffer, "+SMS FULL")) {
+        sms_remove_messages();
+        retval = true;
     } else if (mPico->IsRxTopic) {
         if (PICO_RX_TOPIC_LENGTH - mPico->pRxTopic >= strlen(Buffer)) {
             strcpy(mPico->RxTopic + mPico->pRxTopic, Buffer);
