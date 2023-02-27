@@ -9,10 +9,6 @@
  * <h2><center>&copy; Copyright (c) 2023 Sang Tan Truong.
  * All rights reserved.</center></h2>
  *
- * This software component is licensed by ST under BSD 3-Clause license,
- * the "License"; You may not use this file except in compliance with the
- * License. You may obtain a copy of the License at:
- *                        opensource.org/licenses/BSD-3-Clause
  *
  ******************************************************************************
  */
@@ -250,7 +246,7 @@ bool add_phone(void) {
             if (cPos != NULL) {
                 pos3 = cPos - pConfigure->SmsBuffer + 4;
                 LOGF("Pos3 =%d", pos3);
-                if (pConfigure->SmsBuffer[pos3] >= '0' &&
+                if (pConfigure->SmsBuffer[pos3] >= '1' &&
                     pConfigure->SmsBuffer[pos3] <= '9') {
                     iPos = pConfigure->SmsBuffer[pos3] - '0';
                     sprintf(Buffer, "Add phone successfully:Phone=%s,Pos=%d",
