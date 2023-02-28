@@ -106,6 +106,11 @@ int main() {
     LOG("Idex data:");
     sprintf(Buffer, "%d\r\n", pIden->Index);
     LOG(Buffer);
+    if (pIden->Index == 0x12) {
+        memcpy(&mIden, pIden, sizeof(Identifier_t));
+    } else {
+        mConfig.identify = &mIden;
+    }
     while (1)
         ;
     // Test HTTP(s) APIs
